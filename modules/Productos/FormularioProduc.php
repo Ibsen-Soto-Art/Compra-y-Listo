@@ -867,12 +867,13 @@ ob_start();
                             btnSubmit.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Importando...';
                             resultado.innerHTML = "";
 
-                            const fd = new FormData(this);
-                            // Adjuntar imágenes manualmente (el input fue reseteado)
-                            imagenesImport.forEach(f => fd.append("imagenes[]", f));
-
-                            fetch("importarProductos.php", { method: "POST", body: fd })
-                            .then(r => r.json())
+                            const formEl = this;
+                            Promise.all(imagenesImport.map(f => comprimirImagen(f)))
+                            .then(comprimidas => {
+                            const fd = new FormData(formEl);
+                            comprimidas.forEach((blob, i) => fd.append("imagenes[]", blob, "img" + i + ".jpg"));
+                            return fetch("importarProductos.php", { method: "POST", body: fd });
+                            }).then(r => r.json())
                             .then(data => {
                                 if (data.error) {
                                     resultado.innerHTML = `<p class="import-fatal">${data.error}</p>`;
@@ -2064,21 +2065,53 @@ ob_start();
                         .then(() => elemento.remove());
                     }
 
+                    /**
+                     * Comprime una imagen usando Canvas antes de subirla.
+                     * Reduce imágenes de 5-10 MB a ~200-400 KB sin pérdida visual notable.
+                     */
+                    function comprimirImagen(file, maxPx = 1200, quality = 0.82) {
+                        return new Promise((resolve) => {
+                            if (!file.type.startsWith("image/")) { resolve(file); return; }
+                            const img = new Image();
+                            const url = URL.createObjectURL(file);
+                            img.onload = () => {
+                                URL.revokeObjectURL(url);
+                                let { width, height } = img;
+                                if (width > maxPx || height > maxPx) {
+                                    if (width >= height) { height = Math.round(height * maxPx / width); width = maxPx; }
+                                    else                 { width  = Math.round(width  * maxPx / height); height = maxPx; }
+                                }
+                                const canvas = document.createElement("canvas");
+                                canvas.width = width; canvas.height = height;
+                                canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+                                canvas.toBlob(blob => resolve(blob || file), "image/jpeg", quality);
+                            };
+                            img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+                            img.src = url;
+                        });
+                    }
+
                     document.getElementById("formProducto").addEventListener("submit", function(e){
                         e.preventDefault();
                         const btn = this.querySelector("button[type='submit']");
                         if(btn.disabled) return;
                         btn.disabled = true;
-                        btn.textContent = "Guardando...";
+                        btn.textContent = "Comprimiendo...";
 
-                        const formData = new FormData(this);
-                        const id = this.dataset.id;
-                        imagenes.forEach(img => formData.append("imagenes[]", img));
+                        const form = this;
+                        const id   = form.dataset.id;
+                        const url  = id ? "actualizarProducto.php" : "crearProducto.php";
 
-                        const url = id ? "actualizarProducto.php" : "crearProducto.php";
-                        if(id) formData.append("idProducto", id);
-
-                        fetch(url, { method: "POST", body: formData })
+                        Promise.all(imagenes.map(f => comprimirImagen(f)))
+                        .then(comprimidas => {
+                            const formData = new FormData(form);
+                            if(id) formData.append("idProducto", id);
+                            comprimidas.forEach((blob, i) => {
+                                formData.append("imagenes[]", blob, "img" + i + ".jpg");
+                            });
+                            btn.textContent = "Guardando...";
+                            return fetch(url, { method: "POST", body: formData });
+                        })
                         .then(res => res.text())
                         .then(resp => {
                             if(resp.trim() !== "ok"){

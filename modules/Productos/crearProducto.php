@@ -8,6 +8,24 @@ if(!isset($_SESSION['usuarios'])){
     exit();
 }
 
+function guardarImagenOptimizada($tmp, $destino, $maxPx = 1200, $quality = 82){
+    if(!function_exists('imagecreatefromstring')){ move_uploaded_file($tmp, $destino); return; }
+    $data = file_get_contents($tmp);
+    $src  = @imagecreatefromstring($data);
+    if(!$src){ move_uploaded_file($tmp, $destino); return; }
+    $w = imagesx($src); $h = imagesy($src);
+    if($w > $maxPx || $h > $maxPx){
+        if($w >= $h){ $nw = $maxPx; $nh = (int)round($h * $maxPx / $w); }
+        else         { $nh = $maxPx; $nw = (int)round($w * $maxPx / $h); }
+        $dst = imagecreatetruecolor($nw, $nh);
+        imagealphablending($dst, false); imagesavealpha($dst, true);
+        imagecopyresampled($dst, $src, 0,0,0,0, $nw,$nh,$w,$h);
+        imagedestroy($src); $src = $dst;
+    }
+    imagejpeg($src, $destino, $quality);
+    imagedestroy($src);
+}
+
 $idUsuario = $_SESSION['idUsuario'];
 
 $nombre      = trim($_POST['nombre'] ?? '');
@@ -64,15 +82,16 @@ if(!file_exists($carpeta)) mkdir($carpeta, 0777, true);
 
 $ordenes = $_POST['orden'] ?? [];
 if(isset($_FILES['imagenes'])){
+    $stmtImg = mysqli_prepare($con,
+        "INSERT INTO imagenesproducto (idProducto, rutaImagen, esPrincipal, orden) VALUES (?, ?, ?, ?)");
     foreach($_FILES['imagenes']['tmp_name'] as $key => $tmp){
         if($_FILES['imagenes']['error'][$key] === 0){
-            $orden      = $ordenes[$key] ?? $key;
+            $orden       = isset($ordenes[$key]) ? intval($ordenes[$key]) : $key;
             $esPrincipal = ($orden == 0) ? 1 : 0;
             $nombreArchivo = uniqid() . ".jpg";
-            move_uploaded_file($tmp, $carpeta . $nombreArchivo);
+            $destino = $carpeta . $nombreArchivo;
+            guardarImagenOptimizada($tmp, $destino);
             $rutaBD = rtrim(SITE_URL, '/') . "/uploads/productos/$idProducto/$nombreArchivo";
-            $sqlImg = "INSERT INTO imagenesproducto (idProducto, rutaImagen, esPrincipal, orden) VALUES (?, ?, ?, ?)";
-            $stmtImg = mysqli_prepare($con, $sqlImg);
             mysqli_stmt_bind_param($stmtImg, "isii", $idProducto, $rutaBD, $esPrincipal, $orden);
             mysqli_stmt_execute($stmtImg);
         }
