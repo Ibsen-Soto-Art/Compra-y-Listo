@@ -2298,10 +2298,9 @@ font-size:14px;
 .img-preview{
     position: relative;
     border-radius: 10px;
-    overflow: hidden;
     cursor: grab;
     border: 2px solid transparent;
-    transition: 0.2s;
+    transition: border-color 0.2s;
 }
 
 .img-preview:hover{
@@ -2312,6 +2311,8 @@ font-size:14px;
     width: 100%;
     height: 80px;
     object-fit: cover;
+    border-radius: 8px;
+    display: block;
 }
 
 .img-preview span{
@@ -2323,6 +2324,34 @@ font-size:14px;
     font-size: 12px;
     padding: 2px 6px;
     border-radius: 5px;
+    pointer-events: none;
+}
+
+.eliminar-img{
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #e53935;
+    color: #fff;
+    border: 2px solid #fff;
+    font-size: 11px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    z-index: 10;
+    transition: background 0.15s, transform 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+
+.eliminar-img:hover{
+    background: #c62828;
+    transform: scale(1.15);
 }
 
 #formProducto button{

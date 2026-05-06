@@ -2045,9 +2045,10 @@ ob_start();
                             div.classList.add("img-preview");
                             div.innerHTML = `
                                 <img src="${img.rutaImagen}">
-                                <button class="eliminar-img" data-id="${img.idImagen}">✖</button>
+                                <button type="button" class="eliminar-img" data-id="${img.idImagen}" title="Eliminar imagen">✕</button>
                             `;
-                            div.querySelector(".eliminar-img").addEventListener("click", () => {
+                            div.querySelector(".eliminar-img").addEventListener("click", (e) => {
+                                e.stopPropagation();
                                 eliminarImagen(img.idImagen, div);
                             });
                             preview.appendChild(div);
@@ -2055,14 +2056,28 @@ ob_start();
                     }
 
                     function eliminarImagen(idImagen, elemento){
-                        if(!confirm("¿Eliminar imagen?")) return;
-                        fetch("eliminarImagen.php", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: "id=" + idImagen
-                        })
-                        .then(res => res.text())
-                        .then(() => elemento.remove());
+                        const btn = elemento.querySelector(".eliminar-img");
+                        if(btn.dataset.confirmando === "1"){
+                            btn.textContent = "...";
+                            btn.disabled = true;
+                            fetch("eliminarImagen.php", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                body: "id=" + idImagen
+                            })
+                            .then(() => elemento.remove());
+                        } else {
+                            btn.dataset.confirmando = "1";
+                            btn.textContent = "?";
+                            btn.style.background = "#f57c00";
+                            setTimeout(() => {
+                                if(btn.dataset.confirmando === "1"){
+                                    btn.dataset.confirmando = "0";
+                                    btn.textContent = "✕";
+                                    btn.style.background = "";
+                                }
+                            }, 2500);
+                        }
                     }
 
                     /**
