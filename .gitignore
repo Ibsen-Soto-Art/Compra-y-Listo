@@ -1,0 +1,30 @@
+# Entorno y credenciales
+.env
+.env.local
+.env.production
+
+# Dependencias
+/vendor/
+
+# Uploads generados por usuarios
+/uploads/*
+!/uploads/.gitkeep
+
+# Logs
+*.log
+/logs/*
+!/logs/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Archivos compilados / caché PHP
+*.cache

@@ -1,47 +1,27 @@
 <?php
 // ══════════════════════════════════════════════════════════════
-//  config.php — Configuración central de Compra y Listo
+//  config.php — Configuracion central de Compra y Listo
 //
-//  EN LOCAL (XAMPP):
-//      SITE_URL  = 'http://localhost/compraylisto'
-//      DB_USER   = 'root'
-//      DB_PASS   = ''
-//
-//  EN PRODUCCIÓN (Ferozo):
-//      SITE_URL  = 'https://tudominio.com'   ← sin barra al final
-//      DB_USER   = el usuario que creas en cPanel
-//      DB_PASS   = la contraseña que pusiste en cPanel
-//      DB_NAME   = el nombre de la BD que creas en cPanel
+//  Las credenciales se leen del archivo .env en la raiz del proyecto.
+//  Copia .env.example a .env y completa los valores antes de usar.
 // ══════════════════════════════════════════════════════════════
 
-// ── Detectar entorno automáticamente ─────────────────────────
-$esLocal = (
-    $_SERVER['SERVER_NAME'] === 'localhost' ||
-    str_starts_with($_SERVER['SERVER_ADDR'] ?? '', '127.') ||
-    str_starts_with($_SERVER['SERVER_ADDR'] ?? '', '192.168.')
-);
+require_once __DIR__ . '/../vendor/autoload.php';
 
-if ($esLocal) {
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
 
-    // ─────────────── ENTORNO LOCAL ────────────────────────────
-    define('ENTORNO',  'local');
-    define('SITE_URL', 'http://localhost/compraylisto');  // ← URL local correcta
-    define('DB_HOST',  'localhost');
-    define('DB_USER',  'root');
-    define('DB_PASS',  '');
-    define('DB_NAME',  'compraylisto');
+$dotenv->required([
+    'APP_ENV', 'SITE_URL',
+    'DB_HOST', 'DB_USER', 'DB_NAME',
+]);
 
-} else {
-
-    // ─────────────── ENTORNO PRODUCCIÓN (Ferozo) ─────────────
-    define('ENTORNO',  'produccion');
-    define('SITE_URL', 'https://compraylisto.co');
-    define('DB_HOST',  'localhost');
-    define('DB_USER',  'c2742026_compra');
-    define('DB_PASS',  'WO92kufote');
-    define('DB_NAME',  'c2742026_compra');
-
-}
+define('ENTORNO',  $_ENV['APP_ENV']);
+define('SITE_URL', rtrim($_ENV['SITE_URL'], '/'));
+define('DB_HOST',  $_ENV['DB_HOST']);
+define('DB_USER',  $_ENV['DB_USER']);
+define('DB_PASS',  $_ENV['DB_PASS'] ?? '');
+define('DB_NAME',  $_ENV['DB_NAME']);
 
 // ── Mostrar errores solo en local (nunca en endpoints AJAX/JSON) ──
 $esAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) ||
