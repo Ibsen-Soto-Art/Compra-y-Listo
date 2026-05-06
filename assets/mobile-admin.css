@@ -24,7 +24,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     position: sticky;
     top: 0;
     z-index: 500;
-    background: #ca0505;
+    background: #fff;
     box-shadow: 0 2px 10px rgba(0,0,0,.08);
 }
 
