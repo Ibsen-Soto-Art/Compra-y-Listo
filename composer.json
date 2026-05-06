@@ -1,0 +1,9 @@
+{
+    "require": {
+        "phpoffice/phpspreadsheet": "^2.0",
+        "phpmailer/phpmailer": "^7.0"
+    },
+    "config": {
+        "platform-check": false
+    }
+}

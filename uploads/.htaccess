@@ -1,0 +1,9 @@
+# Bloquear ejecución de PHP en la carpeta de uploads
+# (evita que alguien suba un archivo .php disfrazado de imagen y lo ejecute)
+
+<FilesMatch "\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+Options -Indexes

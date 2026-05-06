@@ -1,0 +1,859 @@
+/*
+ * mobile.css — Compra y Listo
+ * Estilos exclusivos para dispositivos móviles (max-width: 768px)
+ * Se carga DESPUÉS de styleAll.css para sobrescribir donde sea necesario
+ * ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Variables de color base ─────────────────────────────────────────── */
+:root {
+    --mob-green:    #2E8B57;
+    --mob-green-lt: #e8f5e9;
+    --mob-green-dk: #1a5c38;
+    --mob-wa:       #25D366;
+    --mob-gray:     #f4f6f9;
+    --mob-text:     #1a1a1a;
+    --mob-sub:      #6b7280;
+    --mob-nav-h:    64px;
+    --mob-radius:   20px;
+    --mob-shadow:   0 -4px 24px rgba(0,0,0,0.10);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   BOTTOM NAVIGATION BAR
+   ══════════════════════════════════════════════════════════════════ */
+.mob-nav,
+.mob-scroll-top,
+.mob-toast {
+    display: none; /* visibles solo en mobile */
+}
+
+@media (max-width: 768px) {
+
+    /* ── Espacio para la barra inferior ─────────────────────────────── */
+    body { padding-bottom: var(--mob-nav-h); }
+
+    /* ── Bottom Nav ──────────────────────────────────────────────────── */
+    .mob-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--mob-nav-h);
+        background: #fff;
+        border-top: 1px solid #e5e7eb;
+        box-shadow: var(--mob-shadow);
+        z-index: 900;
+        align-items: stretch;
+        justify-content: space-around;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .mob-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        color: var(--mob-sub);
+        font-size: 10px;
+        font-weight: 600;
+        transition: color 0.2s, background 0.2s;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+    }
+
+    .mob-nav-item i {
+        font-size: 22px;
+        transition: transform 0.2s;
+    }
+
+    .mob-nav-item:active i { transform: scale(0.88); }
+
+    .mob-nav-item.activo {
+        color: var(--mob-green);
+    }
+    .mob-nav-item.activo::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 20%;
+        right: 20%;
+        height: 3px;
+        background: var(--mob-green);
+        border-radius: 0 0 4px 4px;
+    }
+
+    /* WhatsApp ítem — verde especial */
+    .mob-nav-item.mob-nav-wa {
+        color: var(--mob-wa);
+    }
+    .mob-nav-item.mob-nav-wa i {
+        font-size: 26px;
+    }
+
+    /* Botón central destacado (Mascota) */
+    .mob-nav-center {
+        background: #fff;
+        border-radius: 50%;
+        width: 56px;
+        height: 56px;
+        min-width: 56px;
+        margin-top: -22px;
+        box-shadow: 0 4px 16px rgba(46,139,87,0.30), 0 0 0 3px #2E8B57;
+        align-self: center;
+        flex: none;
+        padding: 0;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .mob-nav-mascota {
+        width: 56px;
+        height: 56px;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        border-radius: 50%;
+        transition: transform 0.2s;
+        pointer-events: none;
+    }
+    .mob-nav-center:active .mob-nav-mascota { transform: scale(0.9); }
+    .mob-nav-center span { display: none; }
+    .mob-nav-center::after { display: none !important; }
+
+    /* ── Header público en móvil ─────────────────────────────────────── */
+    .pub-head {
+        padding: 0 16px;
+        min-height: 64px;
+        gap: 12px;
+        background: linear-gradient(135deg, #0d2509 0%, #1a5c38 60%, #2E8B57 100%);
+        box-shadow: 0 2px 16px rgba(0,0,0,0.30);
+        border-bottom: none;
+    }
+
+    /* Contenedor del logo: fondo blanco translúcido para contraste */
+    .pub-head .imglogo > a {
+        background: rgba(255,255,255,0.92);
+        border-radius: 12px;
+        padding: 5px 8px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.20);
+    }
+    .imagenlogo {
+        height: 40px;
+        filter: none;
+    }
+
+    /* Re-habilitar nombre y tagline en móvil */
+    .pub-bienvenida {
+        display: flex !important;
+    }
+    .pub-saludo {
+        font-size: 14px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.2px;
+    }
+    .pub-slogan {
+        font-size: 10.5px;
+        color: rgba(165,214,167,0.85);
+        font-weight: 500;
+    }
+    .pub-slogan i {
+        color: #fbbf24; /* pin naranja-amarillo para que destaque */
+        font-size: 10px;
+    }
+
+    /* Mostrar solo el botón WhatsApp como acción rápida en el header */
+    .pub-head-acciones {
+        display: flex !important;
+        gap: 8px;
+        margin-left: auto;
+    }
+    .pub-head-wa {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        padding: 0;
+        justify-content: center;
+        background: rgba(255,255,255,0.12);
+        border: 1.5px solid rgba(255,255,255,0.25);
+        color: #fff;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.20);
+        transition: background 0.2s, transform 0.2s;
+    }
+    .pub-head-wa:hover,
+    .pub-head-wa:active { background: rgba(255,255,255,0.22); transform: scale(0.95); }
+    .pub-head-wa span   { display: none; }
+    .pub-head-wa i      { font-size: 19px; }
+
+    /* El botón de login se maneja desde la bottom nav */
+    .btn-login-header { display: none !important; }
+
+    /* ── Hero: más compacto ──────────────────────────────────────────── */
+    .pub-hero {
+        padding: 24px 14px 20px;
+        min-height: unset;
+    }
+    .pub-hero-blob { display: none; } /* sin blobs en móvil */
+    .pub-hero-badge { display: none; }
+    .pub-hero-texto h1 {
+        font-size: 20px;
+        line-height: 1.25;
+        margin-bottom: 6px;
+    }
+    .pub-hero-texto p { font-size: 13px; margin-bottom: 14px; }
+
+    /* ── Barra de búsqueda ───────────────────────────────────────────── */
+    .pub-search-bar {
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .pub-search-inner {
+        padding: 0 12px;
+    }
+    .pub-search-bar input {
+        font-size: 15px;
+        padding: 14px 0;
+    }
+    .pub-search-bar button {
+        padding: 0 18px;
+        font-size: 14px;
+        border-radius: 0 14px 14px 0;
+    }
+    .pub-search-btn-text { display: none; }
+
+    /* ── Stats hero ──────────────────────────────────────────────────── */
+    .pub-hero-stats {
+        margin-top: 14px;
+        border-radius: 12px;
+        padding: 0;
+    }
+    .pub-stat { padding: 10px 14px; }
+    .pub-stat strong { font-size: 16px; }
+    .pub-stat span   { font-size: 10px; }
+    .pub-stat-sep    { height: 20px; }
+
+    /* ── Filtros de categoría: sticky debajo del header ─────────────── */
+    .filtro-barra {
+        position: sticky;
+        top: 64px; /* altura del header público móvil */
+        z-index: 400;
+        margin: 0;
+        border-radius: 0;
+        padding: 8px 12px;
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .filtro-scroll {
+        gap: 6px;
+        padding-bottom: 2px;
+    }
+    .filtro-chip {
+        font-size: 12px;
+        padding: 7px 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        border-radius: 20px;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .filtro-chip-all { font-weight: 700; }
+    .filtro-chip-expand { padding: 7px 8px; }
+
+    /* ── Grid de productos: 2 columnas ajustadas ─────────────────────── */
+    .CartaProducto {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 0 10px;
+        padding-bottom: 10px;
+    }
+
+    .card-producto {
+        width: auto;
+        border-radius: 14px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .slider-producto {
+        height: 150px;
+        border-radius: 14px 14px 0 0;
+    }
+
+    .card-oferta-badge-pub {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0;
+        font-size: 10px;
+        padding: 3px 8px;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .card-info {
+        padding: 8px 10px 10px;
+        gap: 4px;
+    }
+    .card-nombre { font-size: 12px; line-height: 1.3; }
+    .card-precio { font-size: 15px; font-weight: 800; }
+    .card-ubicacion { font-size: 10px; }
+
+    /* Ocultar botón WhatsApp en la card — se abre en el modal */
+    .card-pub .card-wa-btn { display: none; }
+
+    /* ── Cabecera de categoría ───────────────────────────────────────── */
+    .nameCatArriba h2 {
+        font-size: 14px;
+        padding: 10px 10px 6px;
+        margin: 0 10px;
+    }
+
+    /* ── Botón flotante WA: reposicionado sobre la barra ─────────────── */
+    .wa-flotante { display: none; } /* reemplazado por bottom nav */
+
+    /* ── Botón volver arriba ─────────────────────────────────────────── */
+    .mob-scroll-top {
+        display: none;
+        position: fixed;
+        bottom: calc(var(--mob-nav-h) + 12px);
+        right: 14px;
+        z-index: 800;
+        background: var(--mob-green);
+        color: #fff;
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(46,139,87,0.40);
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.3s, transform 0.3s;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .mob-scroll-top.visible { display: flex; }
+    .mob-scroll-top:active  { transform: scale(0.88); }
+
+    /* ── Footer móvil: columna única centrada ────────────────────────── */
+    .footer {
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        margin-top: 20px;
+        padding-bottom: calc(var(--mob-nav-h) + 8px); /* espacio nav inferior */
+    }
+    .footer-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        padding: 28px 20px 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Marca: centrada, con separador inferior */
+    .footer-brand {
+        text-align: center;
+        width: 100%;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .footer-brand h3 {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+    .footer-brand p {
+        font-size: 12px;
+        max-width: 100%;
+        color: rgba(165,214,167,0.85);
+    }
+
+    /* Contacto: centrado, compacto */
+    .footer-contacto {
+        width: 100%;
+        padding: 18px 0 18px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        text-align: center;
+    }
+    .footer-contacto h4 {
+        margin-bottom: 10px;
+        font-size: 11px;
+    }
+    .footer-contacto a,
+    .footer-contacto span {
+        justify-content: center;
+        font-size: 12.5px;
+        margin-bottom: 7px;
+    }
+
+    /* Redes: iconos grandes centrados con etiqueta */
+    .footer-social {
+        width: 100%;
+        padding: 18px 0 4px;
+        text-align: center;
+    }
+    .footer-social h4 {
+        margin-bottom: 14px;
+        font-size: 11px;
+    }
+    .footer-social-iconos {
+        justify-content: center;
+        gap: 16px;
+    }
+    .footer-social-iconos a {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        font-size: 22px;
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.15);
+        flex-direction: column;
+        gap: 4px;
+    }
+    /* Etiqueta debajo del ícono */
+    .footer-social-iconos a::after {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: rgba(200,230,201,0.75);
+        line-height: 1;
+    }
+    .footer-social-iconos a.fb::after { content: 'Facebook'; }
+    .footer-social-iconos a.tt::after { content: 'TikTok';   }
+    .footer-social-iconos a.wa::after { content: 'WhatsApp'; }
+
+    /* Footer bottom */
+    .footer-bottom {
+        padding: 12px 14px;
+        font-size: 11px;
+        text-align: center;
+    }
+
+    /* ── Estado vacío ────────────────────────────────────────────────── */
+    .pub-empty {
+        padding: 40px 20px;
+        font-size: 14px;
+    }
+    .pub-empty i { font-size: 40px; }
+
+    /* ══════════════════════════════════════════════════════════════════
+       MODAL PRODUCTO — Bottom Sheet en móvil
+       ══════════════════════════════════════════════════════════════ */
+
+    /* Overlay del modal */
+    #modalVistaProducto.modal {
+        align-items: flex-end;
+        padding: 0;
+        background: rgba(0,0,0,0.55);
+    }
+
+    /* Contenido: sube desde abajo */
+    .pub-modal-vista {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 92dvh !important;
+        border-radius: var(--mob-radius) var(--mob-radius) 0 0 !important;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+        position: relative;
+        padding: 0 !important;
+    }
+    #modalVistaProducto.modal.activo .pub-modal-vista,
+    .pub-modal-vista.visible {
+        transform: translateY(0);
+    }
+
+    /* Handle de arrastre */
+    .pub-modal-vista::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        background: #d1d5db;
+        border-radius: 4px;
+        margin: 10px auto 0;
+        flex-shrink: 0;
+    }
+
+    /* Cerrar: esquina interior */
+    #modalVistaProducto .cerrar {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 10;
+        background: rgba(0,0,0,0.15);
+        backdrop-filter: blur(4px);
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    /* Contenedor: columna vertical, reordenando elementos */
+    .vista-container {
+        flex-direction: column !important;
+        gap: 0 !important;
+        padding: 0 !important;
+    }
+    /* Orden en móvil: imagen arriba → dots → miniaturas → info */
+    .imagen-grande    { order: 1; }
+    .mob-swipe-dots   { order: 2; }
+    .miniaturas       { order: 3; }
+    .info-producto    { order: 4; }
+
+    /* Galería de imágenes */
+    .imagen-grande {
+        width: 100% !important;
+        height: 62vw !important;
+        min-height: 220px !important;
+        max-height: 320px !important;
+        background: #111;
+        position: relative;
+        overflow: hidden;
+        border-radius: 0 !important;
+        flex-shrink: 0;
+    }
+    /* Fondo desenfocado: misma imagen escalada + blur */
+    .imagen-grande::before {
+        content: '';
+        position: absolute;
+        inset: -16px;
+        background-image: var(--img-blur, none);
+        background-size: cover;
+        background-position: center;
+        filter: blur(18px);
+        opacity: 0.55;
+        z-index: 0;
+        transition: background-image 0.2s;
+    }
+    #imagenPrincipalVista {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    /* Miniaturas horizontales */
+    .miniaturas {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        padding: 10px 14px !important;
+        scrollbar-width: none;
+        flex-shrink: 0;
+        background: #f4f6f9;
+    }
+    .miniaturas::-webkit-scrollbar { display: none; }
+    .miniaturas img {
+        width: 76px !important;
+        height: 76px !important;
+        object-fit: cover !important;
+        border-radius: 12px !important;
+        flex-shrink: 0;
+        border: 3px solid transparent;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        transition: border-color 0.2s, transform 0.2s;
+    }
+    .miniaturas img:active { transform: scale(0.94); }
+    .miniaturas img.activa,
+    .miniaturas img.miniatura-activa {
+        border-color: var(--mob-green) !important;
+        box-shadow: 0 2px 10px rgba(46,139,87,0.30);
+    }
+
+    /* Zona de información reestructurada */
+    .info-producto {
+        padding: 14px 16px 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0;
+    }
+
+    /* Restablecer order a flujo natural en móvil */
+    .det-nombre      { order: 0 !important; }
+    .det-precio      { order: 0 !important; }
+    .det-fila-meta   { order: 0 !important; }
+    .det-sep         { order: 0 !important; }
+    .det-desc-bloque { order: 0 !important; }
+    #btnWhatsapp     { order: 0 !important; }
+
+    /* Fila: estado + ubicación (horizontal en móvil) */
+    .det-fila-meta {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    /* Badge de estado (con pastilla de color en móvil) */
+    .det-badge-estado {
+        display: inline-flex !important;
+        align-items: center;
+        padding: 4px 12px !important;
+        border-radius: 20px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        background: #e5e7eb !important;
+        color: #374151;
+        letter-spacing: 0.02em;
+        text-transform: capitalize;
+    }
+    /* Colores por estado en móvil */
+    .det-badge-nuevo    { background: #dcfce7 !important; color: #15803d !important; }
+    .det-badge-usado    { background: #fef9c3 !important; color: #854d0e !important; }
+    .det-badge-vendido  { background: #fee2e2 !important; color: #b91c1c !important; }
+
+    /* Ubicación: con icono en móvil */
+    .det-ubicacion {
+        display: flex !important;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--mob-sub);
+        font-weight: 500;
+    }
+    .det-ubicacion i { display: inline !important; color: var(--mob-green); font-size: 13px; }
+
+    /* Nombre del producto */
+    .det-nombre {
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        line-height: 1.3 !important;
+        color: var(--mob-text) !important;
+        margin: 0 0 8px !important;
+    }
+
+    /* Precio */
+    .det-precio {
+        font-size: 26px !important;
+        font-weight: 900 !important;
+        color: var(--mob-green) !important;
+        letter-spacing: -0.5px !important;
+        margin: 0 0 14px !important;
+    }
+
+    /* Separador */
+    .det-sep {
+        height: 1px;
+        background: #e5e7eb;
+        margin-bottom: 14px;
+    }
+
+    /* Bloque de descripción */
+    .det-desc-bloque { margin-bottom: 16px; }
+    .det-desc-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--mob-sub);
+        display: flex !important;   /* visible en móvil */
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 6px;
+    }
+    .det-desc-label i { font-size: 13px; }
+    .det-desc {
+        font-size: 14px;
+        color: #374151;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    /* Botón WhatsApp en modal */
+    .pub-wa-detalle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--mob-wa);
+        color: #fff !important;
+        border-radius: 14px;
+        padding: 14px;
+        font-size: 15px;
+        font-weight: 700;
+        margin-top: 10px;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.2s, transform 0.15s;
+    }
+    .pub-wa-detalle:active { background: #1ea855; transform: scale(0.97); }
+    .pub-wa-detalle i { font-size: 20px; }
+
+    /* Zoom hint — oculto en móvil, no aplica */
+    .zoom-hint, .zoom-reset-btn { display: none !important; }
+
+    /* ══════════════════════════════════════════════════════════════════
+       MODAL LOGIN — Bottom Sheet en móvil
+       ══════════════════════════════════════════════════════════════ */
+    #modalLogin.modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .modal-login-contenido {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: var(--mob-radius) var(--mob-radius) 0 0 !important;
+        max-height: 95dvh !important;
+        overflow-y: auto;
+    }
+
+    .modal-login-banner {
+        border-radius: 0 !important;
+        padding: 14px 16px 12px !important;
+    }
+
+    /* Handle visual */
+    .modal-login-contenido::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        background: #d1d5db;
+        border-radius: 4px;
+        margin: 10px auto 0;
+    }
+
+    /* Animación de entrada bottom-sheet login */
+    .modal-login-contenido {
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+    }
+    .modal-login-contenido.visible {
+        transform: translateY(0);
+    }
+
+    .modal-login-body { padding: 14px 16px 20px; }
+    .modal-login-titulo { font-size: 18px; }
+    .modal-login-sub    { font-size: 13px; }
+
+    /* Inputs más grandes para el dedo */
+    .login-field input {
+        font-size: 16px; /* evita zoom en iOS */
+        padding: 14px 12px;
+    }
+
+    /* Botón submit: más alto */
+    .btn-login-submit { padding: 15px; font-size: 15px; }
+
+    /* Grid de código: cajas más grandes */
+    .codigo-grid { gap: 8px; }
+    .codigo-digit {
+        width: 44px !important;
+        height: 54px !important;
+        font-size: 22px !important;
+        border-radius: 12px !important;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       TOAST DE NOTIFICACIÓN (Mobile-friendly)
+       ══════════════════════════════════════════════════════════════ */
+    .mob-toast {
+        position: fixed;
+        bottom: calc(var(--mob-nav-h) + 14px);
+        left: 14px;
+        right: 14px;
+        background: #1a1a1a;
+        color: #fff;
+        border-radius: 14px;
+        padding: 14px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 1100;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: opacity 0.25s, transform 0.25s;
+        pointer-events: none;
+    }
+    .mob-toast.show { opacity: 1; transform: translateY(0); }
+    .mob-toast i { font-size: 18px; color: var(--mob-wa); }
+
+    /* ══════════════════════════════════════════════════════════════════
+       SWIPE INDICATOR en galería
+       ══════════════════════════════════════════════════════════════ */
+    .mob-swipe-dots {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        padding: 6px 0 2px;
+        background: #000;
+        flex-shrink: 0;
+    }
+    .mob-swipe-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.35);
+        transition: background 0.2s, width 0.2s;
+    }
+    .mob-swipe-dots span.activo {
+        background: #fff;
+        width: 18px;
+        border-radius: 3px;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ≤ 480px — Teléfono estándar, refinamientos extra
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .CartaProducto {
+        gap: 8px;
+        margin: 0 8px;
+    }
+    .slider-producto  { height: 130px; }
+    .card-nombre      { font-size: 11px; }
+    .card-precio      { font-size: 14px; }
+    .card-info        { padding: 7px 8px 9px; }
+
+    .pub-hero-texto h1 { font-size: 18px; }
+    .pub-hero-stats    { margin-top: 12px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ≤ 380px — Teléfonos pequeños (iPhone SE)
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+    .CartaProducto {
+        gap: 6px;
+        margin: 0 6px;
+    }
+    .slider-producto { height: 115px; }
+    .card-nombre     { font-size: 10px; }
+    .card-precio     { font-size: 13px; }
+    .card-info       { padding: 6px 7px 8px; }
+    .filtro-chip     { font-size: 11px; padding: 6px 10px; }
+}
