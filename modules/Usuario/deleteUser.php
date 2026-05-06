@@ -1,26 +1,25 @@
 <?php
-    session_start();
-    include("../../config/conection.php");
-    $con = conection();
+session_start();
+include "../../config/conection.php";
+require_once "Model.php";
+$con = conection();
 
-    $idEliminar = $_GET['id'];
-    $idUsuario = $_SESSION['idUsuario'];
+$idLogeado  = (int)($_SESSION['idUsuario'] ?? 0);
+$idEliminar = (int)($_GET['id']            ?? 0);
 
-    $sqlRol = "SELECT rol FROM usuarios WHERE idUsuario=$idUsuario";
-    $res = mysqli_query($con,$sqlRol);
-    $datos = mysqli_fetch_assoc($res);
+if (!$idLogeado || UsuarioModel::obtenerRol($con, $idLogeado) !== 'admin') {
+    die("No tienes permisos");
+}
 
-    if($datos['rol'] != "admin"){
-        die("No tienes permisos");
-    }
+if (!$idEliminar) {
+    die("ID no valido");
+}
 
-    if($idEliminar == $idUsuario){
-        die("No puedes eliminar tu propio usuario");
-    }
+if ($idEliminar === $idLogeado) {
+    die("No puedes eliminar tu propio usuario");
+}
 
-    $sql = "DELETE FROM usuarios WHERE idUsuario=$idEliminar";
-    mysqli_query($con,$sql);
+UsuarioModel::eliminar($con, $idEliminar);
 
-    header("Location: FormularioUser.php");
-
-?>
+header("Location: FormularioUser.php");
+exit;

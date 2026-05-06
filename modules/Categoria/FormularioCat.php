@@ -948,10 +948,11 @@ ob_start();
         formAgregar.addEventListener("submit", function(e){
             e.preventDefault();
             fetch("insertarCategoria.php", { method:"POST", body: new FormData(formAgregar) })
-            .then(r => r.text())
+            .then(r => r.json())
             .then(data => {
-                mensajeAgreg.innerHTML = data;
-                if(data.includes("success")) setTimeout(() => { cerrarModalAgregar(); location.reload(); }, 800);
+                mensajeAgreg.textContent = data.message;
+                mensajeAgreg.style.color = data.status === "success" ? "green" : "red";
+                if(data.status === "success") setTimeout(() => { cerrarModalAgregar(); location.reload(); }, 800);
             });
         });
 

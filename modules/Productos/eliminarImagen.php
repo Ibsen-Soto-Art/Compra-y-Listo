@@ -1,30 +1,17 @@
 <?php
-include("../../config/conection.php");
+include "../../config/conection.php";
+require_once "Model.php";
 $con = conection();
 
-$id = intval($_POST['id'] ?? 0);
-if(!$id){ echo "error"; exit(); }
+$id = (int)($_POST['id'] ?? 0);
+if (!$id) { echo "error"; exit; }
 
-$sql = "SELECT rutaImagen FROM imagenesproducto WHERE idImagen = $id";
-$res = mysqli_query($con, $sql);
-$img = mysqli_fetch_assoc($res);
-
-if($img){
-    $raiz = realpath(__DIR__ . '/../../') . '/';
-    $ruta = $img['rutaImagen'];
-
-    if(filter_var($ruta, FILTER_VALIDATE_URL)){
-        $path = parse_url($ruta, PHP_URL_PATH);
-        $path = preg_replace('#^/[^/]+/#', '/', $path);
-        $archivoFisico = $raiz . ltrim($path, '/');
-    } else {
-        $ruta = str_replace('/compraylisto/', '/', $ruta);
-        $archivoFisico = $raiz . ltrim($ruta, '/');
-    }
-
-    if(file_exists($archivoFisico)) unlink($archivoFisico);
+$img = ProductoModel::getImagenPorId($con, $id);
+if ($img) {
+    $raiz          = realpath(__DIR__ . '/../../') . '/';
+    $archivoFisico = ProductoModel::rutaFisica($img['rutaImagen'], $raiz);
+    if (file_exists($archivoFisico)) unlink($archivoFisico);
 }
 
-mysqli_query($con, "DELETE FROM imagenesproducto WHERE idImagen = $id");
+ProductoModel::eliminarImagen($con, $id);
 echo "ok";
-?>

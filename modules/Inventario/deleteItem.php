@@ -1,14 +1,23 @@
 <?php
 session_start();
-include("../../config/conection.php");
+header('Content-Type: application/json');
+include "../../config/conection.php";
+require_once "Model.php";
 $con = conection();
-if(!isset($_SESSION['usuarios'])){ echo json_encode(["status"=>"error","message"=>"No autorizado"]); exit(); }
 
-$id = intval($_POST['id'] ?? 0);
-if(!$id){ echo json_encode(["status"=>"error","message"=>"ID inválido"]); exit(); }
+if (!isset($_SESSION['usuarios'])) {
+    echo json_encode(["status" => "error", "message" => "No autorizado"]);
+    exit;
+}
 
-if(mysqli_query($con, "DELETE FROM iteminventario WHERE idItemInventario=$id")){
-    echo json_encode(["status"=>"success"]);
+$id = (int)($_POST['id'] ?? 0);
+if (!$id) {
+    echo json_encode(["status" => "error", "message" => "ID invalido"]);
+    exit;
+}
+
+if (InventarioModel::eliminar($con, $id)) {
+    echo json_encode(["status" => "success"]);
 } else {
-    echo json_encode(["status"=>"error","message"=>"Error al eliminar"]);
+    echo json_encode(["status" => "error", "message" => "Error al eliminar"]);
 }

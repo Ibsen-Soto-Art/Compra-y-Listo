@@ -1,52 +1,49 @@
 <?php
-include("../../config/conection.php");
-$con = conection();
 session_start();
+header('Content-Type: application/json');
+include "../../config/conection.php";
+require_once "Model.php";
+$con = conection();
 
-if(!isset($_SESSION['idUsuario'])){
-    echo json_encode(["status"=>"error","message"=>"No autorizado"]);
-    exit();
+// Solo admins pueden crear usuarios
+$idSesion = (int)($_SESSION['idUsuario'] ?? 0);
+if (!$idSesion) {
+    echo json_encode(["status" => "error", "message" => "No autorizado"]);
+    exit;
+}
+if (UsuarioModel::obtenerRol($con, $idSesion) !== 'admin') {
+    echo json_encode(["status" => "error", "message" => "No tienes permisos para agregar usuarios"]);
+    exit;
 }
 
-$idSesion = $_SESSION['idUsuario'];
-$rowSesion = mysqli_fetch_assoc(mysqli_query($con, "SELECT rol FROM usuarios WHERE idUsuario=$idSesion"));
-if(($rowSesion['rol'] ?? '') !== 'admin'){
-    echo json_encode(["status"=>"error","message"=>"No tienes permisos para agregar usuarios"]);
-    exit();
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(["status" => "error", "message" => "Metodo no permitido"]);
+    exit;
 }
 
-if($_SERVER["REQUEST_METHOD"]=="POST"){
+$nombre  = trim($_POST['nombre']     ?? '');
+$correo  = trim($_POST['correo']     ?? '');
+$pass    = trim($_POST['contraseña'] ?? '');
+$rol     = trim($_POST['rol']        ?? '');
 
-    $nombre = $_POST['nombre'];
-    $correo = $_POST['correo'];
-    $contraseña =$_POST['contraseña'];
-    $rol = $_POST['rol'];
-
-    // Verificar correo
-    $sqlVerificar = "SELECT * FROM usuarios WHERE correo='$correo'";
-    $queryVerificar = mysqli_query($con, $sqlVerificar);
-
-    if(mysqli_num_rows($queryVerificar) > 0){
-        echo json_encode([
-            "status" => "error",
-            "message" => "El correo ya está registrado"
-        ]);
-        exit();
-    }
-
-    $sqlInsert = "INSERT INTO usuarios(nombreUsuario, correo, contraseña, rol)
-                  VALUES('$nombre','$correo','$contraseña', '$rol')";
-
-    if(mysqli_query($con, $sqlInsert)){
-        echo json_encode([
-            "status" => "success",
-            "message" => "Usuario agregado correctamente"
-        ]);
-    } else {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Error al registrar usuario"
-        ]);
-    }
+if (!$nombre || !$correo || !$pass || !$rol) {
+    echo json_encode(["status" => "error", "message" => "Todos los campos son obligatorios"]);
+    exit;
 }
-?>
+
+$rolesValidos = ['admin', 'gestor'];
+if (!in_array($rol, $rolesValidos, true)) {
+    echo json_encode(["status" => "error", "message" => "Rol no valido"]);
+    exit;
+}
+
+if (UsuarioModel::correoExiste($con, $correo)) {
+    echo json_encode(["status" => "error", "message" => "El correo ya esta registrado"]);
+    exit;
+}
+
+if (UsuarioModel::crear($con, $nombre, $correo, $pass, $rol)) {
+    echo json_encode(["status" => "success", "message" => "Usuario agregado correctamente"]);
+} else {
+    echo json_encode(["status" => "error", "message" => "Error al registrar usuario"]);
+}

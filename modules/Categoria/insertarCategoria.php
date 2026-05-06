@@ -1,39 +1,31 @@
 <?php
 session_start();
-include("../../config/conection.php");
-
+header('Content-Type: application/json');
+include "../../config/conection.php";
+require_once "Model.php";
 $con = conection();
 
-if(isset($_POST['nombreCategoria'])){
-
-    $nombre = trim($_POST['nombreCategoria']);
-    $imagen = $_POST['imagenCategoria'] ?? "";
-    $idUsuario = $_SESSION['idUsuario'];
-
-    /* Verificar que no exista otra categoría con el mismo nombre */
-    $verificar = "SELECT idCategoria FROM categoria WHERE nombreCategoria = ?";
-    $stmt = mysqli_prepare($con, $verificar);
-    mysqli_stmt_bind_param($stmt, "s", $nombre);
-    mysqli_stmt_execute($stmt);
-    $resultado = mysqli_stmt_get_result($stmt);
-
-    if(mysqli_num_rows($resultado) > 0){
-        echo "<p style='color:red;'>Ya existe una categoría con ese nombre</p>";
-        exit();
-    }
-
-    /* Insertar categoría */
-    $sql = "INSERT INTO categoria(nombreCategoria, imagenCategoria, idUsuario)
-            VALUES(?, ?, ?)";
-
-    $stmt2 = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($stmt2, "ssi", $nombre, $imagen, $idUsuario);
-
-    if(mysqli_stmt_execute($stmt2)){
-        echo "<p style='color:green;'>success: Categoría registrada correctamente</p>";
-    }else{
-        echo "<p style='color:red;'>Error al registrar la categoría</p>";
-    }
-
+if (!isset($_SESSION['usuarios'])) {
+    echo json_encode(["status" => "error", "message" => "No autorizado"]);
+    exit;
 }
-?>
+
+$nombre    = trim($_POST['nombreCategoria'] ?? '');
+$imagen    = trim($_POST['imagenCategoria'] ?? '');
+$idUsuario = (int)($_SESSION['idUsuario'] ?? 0);
+
+if (!$nombre) {
+    echo json_encode(["status" => "error", "message" => "El nombre es obligatorio"]);
+    exit;
+}
+
+if (CategoriaModel::nombreExiste($con, $nombre)) {
+    echo json_encode(["status" => "error", "message" => "Ya existe una categoria con ese nombre"]);
+    exit;
+}
+
+if (CategoriaModel::insertar($con, $nombre, $imagen, $idUsuario)) {
+    echo json_encode(["status" => "success", "message" => "Categoria registrada correctamente"]);
+} else {
+    echo json_encode(["status" => "error", "message" => "Error al registrar la categoria"]);
+}
