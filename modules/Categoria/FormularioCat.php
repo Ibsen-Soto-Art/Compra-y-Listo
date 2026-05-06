@@ -273,7 +273,7 @@ ob_start();
             <div class="saludo" id="userMenu">
                 <div class="user-info">
                     <div class="user-text">
-                        <span class="bienvenido-texto">Bienvenido, <?php echo $row['rol'] === 'admin' ? 'Admin' : 'Gestor'; ?></span>
+                        <span class="bienvenido-texto">Bienvenido the best, <?php echo $row['rol'] === 'admin' ? 'Admin' : 'Gestor'; ?></span>
                         <span class="bienvenido-user">
                             <?php echo $row['nameuser']; ?>
                             <i class="bi bi-caret-down-fill"></i>
