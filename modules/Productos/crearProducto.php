@@ -8,22 +8,8 @@ if(!isset($_SESSION['usuarios'])){
     exit();
 }
 
-function guardarImagenOptimizada($tmp, $destino, $maxPx = 1200, $quality = 82){
-    if(!function_exists('imagecreatefromstring')){ move_uploaded_file($tmp, $destino); return; }
-    $data = file_get_contents($tmp);
-    $src  = @imagecreatefromstring($data);
-    if(!$src){ move_uploaded_file($tmp, $destino); return; }
-    $w = imagesx($src); $h = imagesy($src);
-    if($w > $maxPx || $h > $maxPx){
-        if($w >= $h){ $nw = $maxPx; $nh = (int)round($h * $maxPx / $w); }
-        else         { $nh = $maxPx; $nw = (int)round($w * $maxPx / $h); }
-        $dst = imagecreatetruecolor($nw, $nh);
-        imagealphablending($dst, false); imagesavealpha($dst, true);
-        imagecopyresampled($dst, $src, 0,0,0,0, $nw,$nh,$w,$h);
-        imagedestroy($src); $src = $dst;
-    }
-    imagejpeg($src, $destino, $quality);
-    imagedestroy($src);
+function guardarImagenOptimizada($tmp, $destino){
+    move_uploaded_file($tmp, $destino);
 }
 
 $idUsuario = $_SESSION['idUsuario'];
