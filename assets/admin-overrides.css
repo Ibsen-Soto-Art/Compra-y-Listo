@@ -1,3 +1,43 @@
+/* ── Visitas: layout stats + gráfica lado a lado ─────────── */
+.vis-body {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 18px;
+    align-items: start;
+}
+.vis-body .vis-stats {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-bottom: 0 !important;
+    flex-wrap: nowrap !important;
+}
+.vis-body .vis-card {
+    flex: none !important;
+    padding: 10px 14px !important;
+}
+.vis-body .vis-chart-wrap {
+    position: relative;
+    height: 260px;
+    max-height: none !important;
+}
+.vis-body .vis-chart-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+@media (max-width: 700px) {
+    .vis-body {
+        grid-template-columns: 1fr !important;
+    }
+    .vis-body .vis-stats {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+    }
+    .vis-body .vis-chart-wrap {
+        height: 220px;
+    }
+}
+
 /* ── Breadcrumb profesional ───────────────────────────────── */
 .ruta {
     display: flex !important;

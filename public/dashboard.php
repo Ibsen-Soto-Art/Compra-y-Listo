@@ -43,12 +43,12 @@
 
     // ── Productos por categoría (top 6) ───────────────────────
     $resCatChart = mysqli_query($con,
-        "SELECT c.nombreCategoria, COUNT(DISTINCT p.idProducto) AS total
+        "SELECT c.nombreCategoria, COUNT(p.idProducto) AS total
          FROM categoria c
-         INNER JOIN subcategoria s ON s.idCategoria = c.idCategoria
-         INNER JOIN productosubcategoria ps ON ps.idSubcategoria = s.idSubcategoria
-         INNER JOIN producto p ON p.idProducto = ps.idProducto
-         GROUP BY c.idCategoria ORDER BY total DESC LIMIT 6");
+         INNER JOIN producto p ON p.idCategoria = c.idCategoria
+         GROUP BY c.idCategoria
+         ORDER BY total DESC
+         LIMIT 6");
     $labelsCat = []; $dataCat = [];
     while($r = mysqli_fetch_assoc($resCatChart)){
         $labelsCat[] = $r['nombreCategoria'];
@@ -333,46 +333,50 @@
                 <span class="vis-badge">index.php</span>
             </div>
 
-            <div class="vis-stats">
-                <div class="vis-card vis-today">
-                    <div class="vis-icon"><i class="bi bi-calendar-day-fill"></i></div>
-                    <div class="vis-info">
-                        <span class="vis-num"><?php echo $visHoy; ?></span>
-                        <span class="vis-label">Visitas hoy</span>
-                    </div>
-                </div>
-                <div class="vis-card vis-unique">
-                    <div class="vis-icon"><i class="bi bi-person-check-fill"></i></div>
-                    <div class="vis-info">
-                        <span class="vis-num"><?php echo $visHoyUnicos; ?></span>
-                        <span class="vis-label">Únicos hoy</span>
-                    </div>
-                </div>
-                <div class="vis-card vis-week">
-                    <div class="vis-icon"><i class="bi bi-calendar-week-fill"></i></div>
-                    <div class="vis-info">
-                        <span class="vis-num"><?php echo $visSemana; ?></span>
-                        <span class="vis-label">Últimos 7 días</span>
-                    </div>
-                </div>
-                <div class="vis-card vis-month">
-                    <div class="vis-icon"><i class="bi bi-calendar-month-fill"></i></div>
-                    <div class="vis-info">
-                        <span class="vis-num"><?php echo $visMes; ?></span>
-                        <span class="vis-label">Últimos 30 días</span>
-                    </div>
-                </div>
-                <div class="vis-card vis-total">
-                    <div class="vis-icon"><i class="bi bi-people-fill"></i></div>
-                    <div class="vis-info">
-                        <span class="vis-num"><?php echo $visUnicosTotal; ?></span>
-                        <span class="vis-label">IPs únicas históricas</span>
-                    </div>
-                </div>
-            </div>
+            <div class="vis-body">
 
-            <div class="vis-chart-wrap">
-                <canvas id="chartVisitas"></canvas>
+                <div class="vis-stats">
+                    <div class="vis-card vis-today">
+                        <div class="vis-icon"><i class="bi bi-calendar-day-fill"></i></div>
+                        <div class="vis-info">
+                            <span class="vis-num"><?php echo $visHoy; ?></span>
+                            <span class="vis-label">Visitas hoy</span>
+                        </div>
+                    </div>
+                    <div class="vis-card vis-unique">
+                        <div class="vis-icon"><i class="bi bi-person-check-fill"></i></div>
+                        <div class="vis-info">
+                            <span class="vis-num"><?php echo $visHoyUnicos; ?></span>
+                            <span class="vis-label">Únicos hoy</span>
+                        </div>
+                    </div>
+                    <div class="vis-card vis-week">
+                        <div class="vis-icon"><i class="bi bi-calendar-week-fill"></i></div>
+                        <div class="vis-info">
+                            <span class="vis-num"><?php echo $visSemana; ?></span>
+                            <span class="vis-label">Últimos 7 días</span>
+                        </div>
+                    </div>
+                    <div class="vis-card vis-month">
+                        <div class="vis-icon"><i class="bi bi-calendar-month-fill"></i></div>
+                        <div class="vis-info">
+                            <span class="vis-num"><?php echo $visMes; ?></span>
+                            <span class="vis-label">Últimos 30 días</span>
+                        </div>
+                    </div>
+                    <div class="vis-card vis-total">
+                        <div class="vis-icon"><i class="bi bi-people-fill"></i></div>
+                        <div class="vis-info">
+                            <span class="vis-num"><?php echo $visUnicosTotal; ?></span>
+                            <span class="vis-label">IPs únicas históricas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vis-chart-wrap">
+                    <canvas id="chartVisitas"></canvas>
+                </div>
+
             </div>
         </div>
         <?php endif; ?>
