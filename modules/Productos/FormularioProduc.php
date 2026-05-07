@@ -2120,11 +2120,11 @@ ob_start();
                         const btn = this.querySelector("button[type='submit']");
                         if (btn.disabled) return;
                         btn.disabled = true;
+                        btn.textContent = imagenes.length > 0 ? "Procesando..." : "Guardando...";
 
                         const form = this;
                         const id   = form.dataset.id;
                         const url  = id ? "actualizarProducto.php" : "crearProducto.php";
-                        const total = imagenes.length;
 
                         // Barra de progreso inline
                         let barraContenedor = document.getElementById("_barraGuardar");
@@ -2132,25 +2132,20 @@ ob_start();
                             barraContenedor = document.createElement("div");
                             barraContenedor.id = "_barraGuardar";
                             barraContenedor.style.cssText = "margin:8px 0;height:6px;background:#e0e0e0;border-radius:4px;overflow:hidden";
-                            barraContenedor.innerHTML = '<div id="_barraGuardarFill" style="height:100%;width:0;background:#4CAF50;transition:width .2s"></div>';
+                            barraContenedor.innerHTML = '<div id="_barraGuardarFill" style="height:100%;width:0;background:#4CAF50;transition:width .3s"></div>';
                             btn.parentNode.insertBefore(barraContenedor, btn);
                         }
                         const fill = document.getElementById("_barraGuardarFill");
-                        const setProgreso = (n, de) => { fill.style.width = (de > 0 ? Math.round(n/de*80) : 0) + "%"; };
 
                         try {
-                            // Comprimir una por una para no saturar memoria
-                            const comprimidas = [];
-                            for (let i = 0; i < total; i++) {
-                                btn.textContent = total > 1
-                                    ? `Procesando ${i + 1}/${total}...`
-                                    : "Procesando...";
-                                setProgreso(i, total);
-                                comprimidas.push(await redimensionarImagenCliente(imagenes[i]));
-                            }
+                            // Comprimir todas en paralelo — mucho mas rapido que en serie
+                            fill.style.width = "10%";
+                            const comprimidas = await Promise.all(
+                                imagenes.map(f => redimensionarImagenCliente(f))
+                            );
 
                             btn.textContent = "Guardando...";
-                            fill.style.width = "85%";
+                            fill.style.width = "60%";
 
                             const formData = new FormData(form);
                             if (id) formData.append("idProducto", id);
@@ -2159,8 +2154,8 @@ ob_start();
                             });
 
                             const res  = await fetch(url, { method: "POST", body: formData });
+                            fill.style.width = "90%";
                             const resp = await res.text();
-
                             fill.style.width = "100%";
 
                             if (resp.trim() !== "ok") {
