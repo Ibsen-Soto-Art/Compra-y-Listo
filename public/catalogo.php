@@ -159,14 +159,14 @@ if(!$esBot){
 
     .filtros-panel {
         position: fixed;
-        top: 0; left: 0;
+        top: 0; left: 0; bottom: 0;
         width: 300px;
         max-width: 88vw;
-        height: 100dvh;
         background: #fff;
         z-index: 501;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
         box-shadow: 4px 0 24px rgba(0,0,0,.12);
         transform: translateX(-110%);
         transition: transform .28s cubic-bezier(.4,0,.2,1);
@@ -341,39 +341,46 @@ if(!$esBot){
     /* Footer panel */
     .filtros-panel-footer {
         display: flex;
-        gap: 8px;
+        gap: 10px;
         padding: 14px 20px;
-        border-top: 1px solid #f1f5f9;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        border-top: 2px solid #e2e8f0;
         flex-shrink: 0;
+        background: #fff;
+        box-shadow: 0 -4px 16px rgba(0,0,0,.08);
     }
     .filtros-limpiar {
         flex: 1;
-        padding: 10px;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 10px;
-        background: #f8fafc;
-        color: #64748b;
-        font-size: 13px;
-        font-weight: 600;
+        padding: 13px 10px;
+        border: 2px solid #cbd5e1;
+        border-radius: 12px;
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 14px;
+        font-weight: 700;
         cursor: pointer;
         display: flex; align-items: center; justify-content: center; gap: 6px;
         transition: all .15s;
+        min-height: 48px;
     }
-    .filtros-limpiar:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+    .filtros-limpiar:hover, .filtros-limpiar:active { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
     .filtros-aplicar {
-        flex: 1;
-        padding: 10px;
+        flex: 2;
+        padding: 13px 10px;
         border: none;
-        border-radius: 10px;
+        border-radius: 12px;
         background: #2E8B57;
         color: #fff;
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 700;
         cursor: pointer;
         display: flex; align-items: center; justify-content: center; gap: 6px;
         transition: background .15s;
+        min-height: 48px;
+        box-shadow: 0 4px 12px rgba(46,139,87,.28);
+        letter-spacing: .2px;
     }
-    .filtros-aplicar:hover { background: #246d44; }
+    .filtros-aplicar:hover, .filtros-aplicar:active { background: #246d44; }
 
     /* Sin resultados */
     .filtros-sin-resultados {
