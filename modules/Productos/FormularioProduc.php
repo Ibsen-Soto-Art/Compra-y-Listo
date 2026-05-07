@@ -2080,13 +2080,14 @@ ob_start();
                         }
                     }
 
-                    /**
-                     * Comprime una imagen usando Canvas antes de subirla.
-                     * Reduce imágenes de 5-10 MB a ~200-400 KB sin pérdida visual notable.
-                     */
-                    function comprimirImagen(file, maxPx = 1200, quality = 0.82) {
+                    // Redimensiona y convierte a JPEG en el navegador antes de subir.
+                    // Procesa una imagen a la vez para no bloquear el thread principal.
+                    function redimensionarImagenCliente(file, maxPx = 1600, quality = 0.85) {
                         return new Promise((resolve) => {
                             if (!file.type.startsWith("image/")) { resolve(file); return; }
+                            if (!window.OffscreenCanvas && !document.createElement("canvas").getContext) {
+                                resolve(file); return; // fallback: sin soporte Canvas
+                            }
                             const img = new Image();
                             const url = URL.createObjectURL(file);
                             img.onload = () => {
@@ -2098,7 +2099,10 @@ ob_start();
                                 }
                                 const canvas = document.createElement("canvas");
                                 canvas.width = width; canvas.height = height;
-                                canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+                                const ctx = canvas.getContext("2d");
+                                ctx.fillStyle = "#ffffff";
+                                ctx.fillRect(0, 0, width, height);
+                                ctx.drawImage(img, 0, 0, width, height);
                                 canvas.toBlob(blob => resolve(blob || file), "image/jpeg", quality);
                             };
                             img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
@@ -2106,42 +2110,73 @@ ob_start();
                         });
                     }
 
-                    document.getElementById("formProducto").addEventListener("submit", function(e){
+                    // Alias para compatibilidad con el bloque de importacion que usa comprimirImagen
+                    function comprimirImagen(file, maxPx = 1200, quality = 0.82) {
+                        return redimensionarImagenCliente(file, maxPx, quality);
+                    }
+
+                    document.getElementById("formProducto").addEventListener("submit", async function(e){
                         e.preventDefault();
                         const btn = this.querySelector("button[type='submit']");
-                        if(btn.disabled) return;
+                        if (btn.disabled) return;
                         btn.disabled = true;
-                        btn.textContent = "Comprimiendo...";
 
                         const form = this;
                         const id   = form.dataset.id;
                         const url  = id ? "actualizarProducto.php" : "crearProducto.php";
+                        const total = imagenes.length;
 
-                        Promise.all(imagenes.map(f => comprimirImagen(f)))
-                        .then(comprimidas => {
+                        // Barra de progreso inline
+                        let barraContenedor = document.getElementById("_barraGuardar");
+                        if (!barraContenedor) {
+                            barraContenedor = document.createElement("div");
+                            barraContenedor.id = "_barraGuardar";
+                            barraContenedor.style.cssText = "margin:8px 0;height:6px;background:#e0e0e0;border-radius:4px;overflow:hidden";
+                            barraContenedor.innerHTML = '<div id="_barraGuardarFill" style="height:100%;width:0;background:#4CAF50;transition:width .2s"></div>';
+                            btn.parentNode.insertBefore(barraContenedor, btn);
+                        }
+                        const fill = document.getElementById("_barraGuardarFill");
+                        const setProgreso = (n, de) => { fill.style.width = (de > 0 ? Math.round(n/de*80) : 0) + "%"; };
+
+                        try {
+                            // Comprimir una por una para no saturar memoria
+                            const comprimidas = [];
+                            for (let i = 0; i < total; i++) {
+                                btn.textContent = total > 1
+                                    ? `Procesando ${i + 1}/${total}...`
+                                    : "Procesando...";
+                                setProgreso(i, total);
+                                comprimidas.push(await redimensionarImagenCliente(imagenes[i]));
+                            }
+
+                            btn.textContent = "Guardando...";
+                            fill.style.width = "85%";
+
                             const formData = new FormData(form);
-                            if(id) formData.append("idProducto", id);
+                            if (id) formData.append("idProducto", id);
                             comprimidas.forEach((blob, i) => {
                                 formData.append("imagenes[]", blob, "img" + i + ".jpg");
                             });
-                            btn.textContent = "Guardando...";
-                            return fetch(url, { method: "POST", body: formData });
-                        })
-                        .then(res => res.text())
-                        .then(resp => {
-                            if(resp.trim() !== "ok"){
+
+                            const res  = await fetch(url, { method: "POST", body: formData });
+                            const resp = await res.text();
+
+                            fill.style.width = "100%";
+
+                            if (resp.trim() !== "ok") {
                                 toast.error(resp.trim());
                                 btn.disabled = false;
                                 btn.textContent = "Guardar";
+                                barraContenedor.remove();
                                 return;
                             }
                             toast.success("Guardado correctamente");
                             location.reload();
-                        })
-                        .catch(() => {
+                        } catch {
                             btn.disabled = false;
                             btn.textContent = "Guardar";
-                        });
+                            barraContenedor.remove();
+                        }
                     });
                  </script>
                 

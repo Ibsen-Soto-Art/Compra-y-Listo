@@ -2,6 +2,7 @@
 session_start();
 include "../../config/conection.php";
 require_once "Model.php";
+require_once "ImagenHelper.php";
 $con = conection();
 
 if (!isset($_SESSION['usuarios'])) { echo "No autorizado"; exit; }
@@ -40,18 +41,31 @@ ProductoModel::insertarSubcategorias($con, $idProducto, $subcats);
 $carpeta = "../../uploads/productos/$idProducto/";
 if (!file_exists($carpeta)) mkdir($carpeta, 0777, true);
 
-$ordenes = $_POST['orden'] ?? [];
+$ordenes      = $_POST['orden'] ?? [];
+$imagenesRows = [];
+
 if (isset($_FILES['imagenes'])) {
     foreach ($_FILES['imagenes']['tmp_name'] as $key => $tmp) {
-        if ($_FILES['imagenes']['error'][$key] === 0) {
-            $orden         = (int)($ordenes[$key] ?? $key);
-            $esPrincipal   = $orden === 0 ? 1 : 0;
-            $nombreArchivo = uniqid() . ".jpg";
-            move_uploaded_file($tmp, $carpeta . $nombreArchivo);
-            $rutaBD = rtrim(SITE_URL, '/') . "/uploads/productos/$idProducto/$nombreArchivo";
-            ProductoModel::insertarImagen($con, $idProducto, $rutaBD, $esPrincipal, $orden);
+        if ($_FILES['imagenes']['error'][$key] !== 0) continue;
+
+        $resultado = ImagenHelper::procesarYGuardar($tmp, $carpeta);
+        if (!$resultado['ok']) {
+            error_log("crearProducto imagen[$key]: " . $resultado['error']);
+            continue;
         }
+
+        $orden       = (int)($ordenes[$key] ?? $key);
+        $rutaBD      = rtrim(SITE_URL, '/') . "/uploads/productos/$idProducto/" . $resultado['nombreArchivo'];
+        $imagenesRows[] = [
+            'ruta'        => $rutaBD,
+            'esPrincipal' => $orden === 0 ? 1 : 0,
+            'orden'       => $orden,
+        ];
     }
+}
+
+if (!empty($imagenesRows)) {
+    ProductoModel::insertarImagenesMasivo($con, $idProducto, $imagenesRows);
 }
 
 // Auto-crear unidades de inventario si se indico cantidad

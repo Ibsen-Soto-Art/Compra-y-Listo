@@ -96,6 +96,31 @@ class ProductoModel {
         return mysqli_stmt_execute($stmt);
     }
 
+    /**
+     * Inserta multiples imagenes en un solo INSERT.
+     * $imagenes: array de ['ruta' => string, 'esPrincipal' => int, 'orden' => int]
+     */
+    public static function insertarImagenesMasivo($con, int $idProducto, array $imagenes): bool {
+        if (empty($imagenes)) return true;
+
+        $placeholders = implode(', ', array_fill(0, count($imagenes), '(?, ?, ?, ?)'));
+        $sql  = "INSERT INTO imagenesproducto (idProducto, rutaImagen, esPrincipal, orden) VALUES $placeholders";
+        $stmt = mysqli_prepare($con, $sql);
+
+        // Construir arrays de tipos y valores para bind dinamico
+        $tipos  = str_repeat('isii', count($imagenes));
+        $params = [];
+        foreach ($imagenes as $img) {
+            $params[] = $idProducto;
+            $params[] = $img['ruta'];
+            $params[] = $img['esPrincipal'];
+            $params[] = $img['orden'];
+        }
+
+        mysqli_stmt_bind_param($stmt, $tipos, ...$params);
+        return mysqli_stmt_execute($stmt);
+    }
+
     public static function actualizarOrdenImagen($con, int $idImagen, int $orden, int $esPrincipal): bool {
         $stmt = mysqli_prepare($con,
             "UPDATE imagenesproducto SET orden = ?, esPrincipal = ? WHERE idImagen = ?");
