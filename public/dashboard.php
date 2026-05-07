@@ -560,7 +560,16 @@ new Chart(document.getElementById('chartRoles'), {
     const totales = <?php echo json_encode($vis14TotalArr); ?>;
     const unicos  = <?php echo json_encode($vis14UnicosArr); ?>;
 
-    new Chart(document.getElementById('chartVisitas'), {
+    const canvasVis = document.getElementById('chartVisitas');
+    // Escalar canvas al pixel ratio real del dispositivo para evitar borrosidad
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvasVis.parentElement.getBoundingClientRect();
+    canvasVis.width  = rect.width  * dpr;
+    canvasVis.height = rect.height * dpr;
+    canvasVis.style.width  = rect.width  + 'px';
+    canvasVis.style.height = rect.height + 'px';
+
+    new Chart(canvasVis, {
         type: 'line',
         data: {
             labels,
@@ -574,6 +583,7 @@ new Chart(document.getElementById('chartRoles'), {
                     tension: 0.4,
                     pointRadius: 4,
                     pointHoverRadius: 6,
+                    borderWidth: 2,
                 },
                 {
                     label: 'Visitantes únicos',
@@ -584,11 +594,14 @@ new Chart(document.getElementById('chartRoles'), {
                     tension: 0.4,
                     pointRadius: 4,
                     pointHoverRadius: 6,
+                    borderWidth: 2,
                 }
             ]
         },
         options: {
-            responsive: true,
+            responsive: false,
+            maintainAspectRatio: false,
+            devicePixelRatio: dpr,
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { position: 'top' },
