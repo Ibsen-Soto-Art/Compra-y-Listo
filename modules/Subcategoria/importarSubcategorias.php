@@ -1,5 +1,4 @@
 <?php
-// Importador real de subcategorías desde Excel
 if (!defined('ROOT_PATH')) define('ROOT_PATH', realpath(__DIR__ . '/../../'));
 if (!class_exists('PhpOffice\PhpSpreadsheet\IOFactory')) {
     require ROOT_PATH . '/vendor/autoload.php';
@@ -40,14 +39,16 @@ for ($c = 1; $c <= $colMax; $c++) {
 $colNombre = $headers['nombresubcategoria'] ?? null;
 $colCat    = $headers['nombrecategoria']    ?? null;
 $colEstado = $headers['estadosubcategoria'] ?? null;
-$colImagen = $headers['imagenurl']          ?? $headers['imagen'] ?? null;
+$colImagen = $headers['imagenurl'] ?? $headers['imagen'] ?? null;
 
 if (!$colNombre || !$colCat) {
-    echo json_encode(['insertados' => 0, 'errores' => 0, 'detalleErrores' => ['Las columnas "nombreSubcategoria" y "nombreCategoria" son obligatorias.']]);
+    echo json_encode(['insertados' => 0, 'errores' => 0, 'detalleErrores' => [
+        'Columnas requeridas no encontradas. Detectadas: ' . implode(', ', array_keys($headers))
+    ]]);
     exit;
 }
 
-// Caché de categorías nombre→id
+// Caché nombre categoría → id
 $cacheCat = [];
 $qc = mysqli_query($con, "SELECT idCategoria, nombreCategoria FROM categoria");
 while ($r = mysqli_fetch_assoc($qc)) {
@@ -55,8 +56,8 @@ while ($r = mysqli_fetch_assoc($qc)) {
 }
 
 for ($f = 2; $f <= $filas; $f++) {
-    $nombre   = trim((string)$hoja->getCell($colNombre . $f)->getValue());
-    $catNombre = trim((string)$hoja->getCell($colCat   . $f)->getValue());
+    $nombre    = trim((string)$hoja->getCell($colNombre . $f)->getValue());
+    $catNombre = trim((string)$hoja->getCell($colCat    . $f)->getValue());
     if ($nombre === '' || $catNombre === '') continue;
 
     $idCat = $cacheCat[strtolower($catNombre)] ?? null;
@@ -70,13 +71,24 @@ for ($f = 2; $f <= $filas; $f++) {
     if (!in_array($estado, ['Activo', 'Oculto'])) $estado = 'Activo';
     $imagen = $colImagen ? trim((string)$hoja->getCell($colImagen . $f)->getValue()) : '';
 
-    $stmt = mysqli_prepare($con, "INSERT IGNORE INTO subcategoria (nombreSubcategoria, idCategoria, estadoSubcategoria, imagenSubcategoria) VALUES (?, ?, ?, ?)");
+    // Columna correcta es imagenUrl (según SubcategoriaModel)
+    $stmt = mysqli_prepare($con,
+        "INSERT INTO subcategoria (nombreSubcategoria, idCategoria, estadoSubcategoria, imagenUrl)
+         VALUES (?, ?, ?, ?)");
+
+    if (!$stmt) {
+        echo json_encode(['insertados' => 0, 'errores' => 0, 'detalleErrores' => ['Error preparando consulta: ' . mysqli_error($con)]]);
+        exit;
+    }
+
     mysqli_stmt_bind_param($stmt, 'siss', $nombre, $idCat, $estado, $imagen);
+
     if (mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0) {
         $insertados++;
     } else {
+        $err = mysqli_stmt_error($stmt);
         $errores++;
-        $detalle[] = "Fila $f: '$nombre' ya existe o es inválida.";
+        $detalle[] = "Fila $f: '$nombre'" . ($err ? " — $err" : " (ya existe)") . ".";
     }
     mysqli_stmt_close($stmt);
 }

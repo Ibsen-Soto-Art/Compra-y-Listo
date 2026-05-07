@@ -1,5 +1,4 @@
 <?php
-// Importador real de categorías desde Excel
 if (!defined('ROOT_PATH')) define('ROOT_PATH', realpath(__DIR__ . '/../../'));
 if (!class_exists('PhpOffice\PhpSpreadsheet\IOFactory')) {
     require ROOT_PATH . '/vendor/autoload.php';
@@ -7,6 +6,9 @@ if (!class_exists('PhpOffice\PhpSpreadsheet\IOFactory')) {
 if (!function_exists('conection')) require_once ROOT_PATH . '/config/conection.php';
 
 header('Content-Type: application/json; charset=utf-8');
+
+if (session_status() === PHP_SESSION_NONE) session_start();
+$idUsuario = (int)($_SESSION['idUsuario'] ?? 1);
 
 $con = conection();
 
@@ -28,7 +30,7 @@ $insertados = 0;
 $errores    = 0;
 $detalle    = [];
 
-// Mapear encabezados (fila 1) → columna letra
+// Mapear encabezados fila 1 → letra de columna
 $headers = [];
 $colMax  = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($hoja->getHighestColumn());
 for ($c = 1; $c <= $colMax; $c++) {
@@ -42,7 +44,7 @@ $colImagen = $headers['imagencategoria'] ?? null;
 $colEstado = $headers['estadocategoria'] ?? null;
 
 if (!$colNombre) {
-    echo json_encode(['insertados' => 0, 'errores' => 0, 'detalleErrores' => ['La columna "nombreCategoria" es obligatoria.']]);
+    echo json_encode(['insertados' => 0, 'errores' => 0, 'detalleErrores' => ['Columna "nombreCategoria" no encontrada. Encabezados detectados: ' . implode(', ', array_keys($headers))]]);
     exit;
 }
 
@@ -54,13 +56,24 @@ for ($f = 2; $f <= $filas; $f++) {
     $estado = $colEstado ? trim((string)$hoja->getCell($colEstado . $f)->getValue()) : 'Activo';
     if (!in_array($estado, ['Activo', 'Oculto'])) $estado = 'Activo';
 
-    $stmt = mysqli_prepare($con, "INSERT IGNORE INTO categoria (nombreCategoria, imagenCategoria, estadoCategoria) VALUES (?, ?, ?)");
-    mysqli_stmt_bind_param($stmt, 'sss', $nombre, $imagen, $estado);
+    // idUsuario es requerido por la tabla categoria
+    $stmt = mysqli_prepare($con,
+        "INSERT INTO categoria (nombreCategoria, imagenCategoria, estadoCategoria, idUsuario)
+         VALUES (?, ?, ?, ?)");
+
+    if (!$stmt) {
+        echo json_encode(['insertados' => 0, 'errores' => 0, 'detalleErrores' => ['Error preparando consulta: ' . mysqli_error($con)]]);
+        exit;
+    }
+
+    mysqli_stmt_bind_param($stmt, 'sssi', $nombre, $imagen, $estado, $idUsuario);
+
     if (mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0) {
         $insertados++;
     } else {
+        $err = mysqli_stmt_error($stmt);
         $errores++;
-        $detalle[] = "Fila $f: '$nombre' ya existe o es inválida.";
+        $detalle[] = "Fila $f: '$nombre'" . ($err ? " — $err" : " (ya existe)") . ".";
     }
     mysqli_stmt_close($stmt);
 }
