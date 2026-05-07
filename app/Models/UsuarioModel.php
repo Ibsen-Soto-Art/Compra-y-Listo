@@ -12,8 +12,10 @@ class UsuarioModel {
         $stmt = mysqli_prepare($con, "SELECT rol FROM usuarios WHERE idUsuario = ?");
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
-        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-        return $row['rol'] ?? null;
+        mysqli_stmt_bind_result($stmt, $rol);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $rol ?? null;
     }
 
     // Verifica si un correo ya existe, excluyendo opcionalmente un ID.

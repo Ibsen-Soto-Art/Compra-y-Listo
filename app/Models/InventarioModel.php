@@ -1,16 +1,27 @@
 <?php
 
 namespace App\Models;
-// Modelo de acceso a datos para el modulo Inventario.
 
 class InventarioModel {
 
     public static function getItems($con, int $idProducto): array {
         $stmt = mysqli_prepare($con,
-            "SELECT * FROM iteminventario WHERE idProducto = ? ORDER BY idItemInventario ASC");
+            "SELECT idItemInventario, idProducto, numeroSerie, estadoItem
+             FROM iteminventario WHERE idProducto = ? ORDER BY idItemInventario ASC");
         mysqli_stmt_bind_param($stmt, "i", $idProducto);
         mysqli_stmt_execute($stmt);
-        return mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
+        mysqli_stmt_bind_result($stmt, $idItemInventario, $idProd, $numeroSerie, $estadoItem);
+        $result = [];
+        while (mysqli_stmt_fetch($stmt)) {
+            $result[] = [
+                'idItemInventario' => $idItemInventario,
+                'idProducto'       => $idProd,
+                'numeroSerie'      => $numeroSerie,
+                'estadoItem'       => $estadoItem,
+            ];
+        }
+        mysqli_stmt_close($stmt);
+        return $result;
     }
 
     public static function serieEnUso($con, string $serie, int $excluirId = 0): bool {
@@ -65,7 +76,6 @@ class InventarioModel {
         return mysqli_stmt_affected_rows($stmt);
     }
 
-    // Devuelve info de categoria/subcategorias de un producto para construir prefijos de serie.
     public static function getInfoProducto($con, int $idProducto): array {
         $stmt = mysqli_prepare($con, "
             SELECT c.nombreCategoria, s.nombreSubcategoria
@@ -76,22 +86,28 @@ class InventarioModel {
             ORDER BY c.nombreCategoria, s.nombreSubcategoria");
         mysqli_stmt_bind_param($stmt, "i", $idProducto);
         mysqli_stmt_execute($stmt);
-        return mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
+        mysqli_stmt_bind_result($stmt, $nombreCategoria, $nombreSubcategoria);
+        $result = [];
+        while (mysqli_stmt_fetch($stmt)) {
+            $result[] = ['nombreCategoria' => $nombreCategoria, 'nombreSubcategoria' => $nombreSubcategoria];
+        }
+        mysqli_stmt_close($stmt);
+        return $result;
     }
 
-    // Devuelve el mayor numero de serie existente para un prefijo dado.
     public static function getMaxNumSerie($con, string $prefix): int {
         $like = $prefix . '%';
         $stmt = mysqli_prepare($con,
             "SELECT numeroSerie FROM iteminventario WHERE numeroSerie LIKE ?");
         mysqli_stmt_bind_param($stmt, "s", $like);
         mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $numeroSerie);
         $maxNum = 0;
-        $result = mysqli_stmt_get_result($stmt);
-        while ($r = mysqli_fetch_assoc($result)) {
-            $num = (int)substr($r['numeroSerie'], strlen($prefix));
+        while (mysqli_stmt_fetch($stmt)) {
+            $num = (int)substr($numeroSerie, strlen($prefix));
             if ($num > $maxNum) $maxNum = $num;
         }
+        mysqli_stmt_close($stmt);
         return $maxNum;
     }
 }

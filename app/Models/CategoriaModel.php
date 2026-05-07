@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Models;
-// Modelo de acceso a datos para el modulo Categoria.
 
 class CategoriaModel {
 
@@ -25,7 +24,6 @@ class CategoriaModel {
         return mysqli_stmt_execute($stmt);
     }
 
-    // Verifica si el nombre ya existe, excluyendo opcionalmente un ID.
     public static function nombreExiste($con, string $nombre, int $excluirId = 0): bool {
         $stmt = mysqli_prepare($con,
             "SELECT idCategoria FROM categoria WHERE nombreCategoria = ? AND idCategoria != ?");
@@ -40,8 +38,10 @@ class CategoriaModel {
             "SELECT estadoCategoria FROM categoria WHERE idCategoria = ?");
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
-        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-        return $row['estadoCategoria'] ?? null;
+        mysqli_stmt_bind_result($stmt, $estado);
+        $found = mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $found ? $estado : null;
     }
 
     public static function toggleEstado($con, int $id, string $nuevoEstado): bool {
@@ -53,21 +53,28 @@ class CategoriaModel {
 
     public static function contarProductos($con, int $id): int {
         $stmt = mysqli_prepare($con,
-            "SELECT COUNT(*) AS total FROM producto WHERE idCategoria = ?");
+            "SELECT COUNT(*) FROM producto WHERE idCategoria = ?");
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
-        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-        return (int)($row['total'] ?? 0);
+        mysqli_stmt_bind_result($stmt, $total);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return (int)$total;
     }
 
-    // Devuelve todas las categorias excepto la indicada, ordenadas por nombre.
     public static function listarExcepto($con, int $excluirId): array {
         $stmt = mysqli_prepare($con,
             "SELECT idCategoria, nombreCategoria FROM categoria
              WHERE idCategoria != ? ORDER BY nombreCategoria ASC");
         mysqli_stmt_bind_param($stmt, "i", $excluirId);
         mysqli_stmt_execute($stmt);
-        return mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
+        mysqli_stmt_bind_result($stmt, $id, $nombre);
+        $result = [];
+        while (mysqli_stmt_fetch($stmt)) {
+            $result[] = ['idCategoria' => $id, 'nombreCategoria' => $nombre];
+        }
+        mysqli_stmt_close($stmt);
+        return $result;
     }
 
     public static function existe($con, int $id): bool {
@@ -76,10 +83,11 @@ class CategoriaModel {
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_store_result($stmt);
-        return mysqli_stmt_num_rows($stmt) > 0;
+        $existe = mysqli_stmt_num_rows($stmt) > 0;
+        mysqli_stmt_close($stmt);
+        return $existe;
     }
 
-    // Mueve todos los productos de una categoria a otra y elimina la de origen.
     public static function moverYEliminar($con, int $idOrigen, int $idDestino): array {
         $stmtMover = mysqli_prepare($con,
             "UPDATE producto SET idCategoria = ? WHERE idCategoria = ?");
@@ -88,16 +96,17 @@ class CategoriaModel {
             return ["ok" => false, "error" => "Error al mover productos"];
         }
         $movidos = mysqli_stmt_affected_rows($stmtMover);
+        mysqli_stmt_close($stmtMover);
 
         $stmtDel = mysqli_prepare($con, "DELETE FROM categoria WHERE idCategoria = ?");
         mysqli_stmt_bind_param($stmtDel, "i", $idOrigen);
         if (!mysqli_stmt_execute($stmtDel)) {
             return ["ok" => false, "error" => "Productos movidos pero error al eliminar categoria"];
         }
+        mysqli_stmt_close($stmtDel);
         return ["ok" => true, "movidos" => $movidos];
     }
 
-    // Elimina multiples categorias (sin productos). Devuelve cuantas se eliminaron.
     public static function eliminarVarias($con, array $ids): int {
         if (empty($ids)) return 0;
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -106,17 +115,20 @@ class CategoriaModel {
             "DELETE FROM categoria WHERE idCategoria IN ($placeholders)");
         mysqli_stmt_bind_param($stmt, $tipos, ...$ids);
         mysqli_stmt_execute($stmt);
-        return mysqli_stmt_affected_rows($stmt);
+        $affected = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+        return $affected;
     }
 
-    // Devuelve nombre de categoria por ID.
     public static function obtenerNombre($con, int $id): ?string {
         $stmt = mysqli_prepare($con,
             "SELECT nombreCategoria FROM categoria WHERE idCategoria = ?");
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
-        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-        return $row['nombreCategoria'] ?? null;
+        mysqli_stmt_bind_result($stmt, $nombre);
+        $found = mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $found ? $nombre : null;
     }
 
     public static function getStats($con): array {

@@ -1,11 +1,9 @@
 <?php
 
 namespace App\Models;
-// Modelo de acceso a datos para el modulo Productos.
 
 class ProductoModel {
 
-    // Resuelve el texto de ubicacion a partir de un idMunicipio.
     public static function getUbicacion($con, int $idMunicipio): string {
         $stmt = mysqli_prepare($con,
             "SELECT CONCAT(m.nombre, ', ', d.nombre) AS ubic
@@ -13,18 +11,21 @@ class ProductoModel {
              WHERE m.idMunicipio = ?");
         mysqli_stmt_bind_param($stmt, "i", $idMunicipio);
         mysqli_stmt_execute($stmt);
-        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-        return $row['ubic'] ?? '';
+        mysqli_stmt_bind_result($stmt, $ubic);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $ubic ?? '';
     }
 
-    // Devuelve idMunicipio y ubicacion actuales de un producto.
     public static function getUbicacionActual($con, int $idProducto): array {
         $stmt = mysqli_prepare($con,
             "SELECT idMunicipio, ubicacion FROM producto WHERE idProducto = ?");
         mysqli_stmt_bind_param($stmt, "i", $idProducto);
         mysqli_stmt_execute($stmt);
-        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-        return $row ?? ['idMunicipio' => null, 'ubicacion' => ''];
+        mysqli_stmt_bind_result($stmt, $idMunicipio, $ubicacion);
+        $found = mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $found ? ['idMunicipio' => $idMunicipio, 'ubicacion' => $ubicacion] : ['idMunicipio' => null, 'ubicacion' => ''];
     }
 
     public static function insertar($con, array $d): int {
@@ -64,7 +65,6 @@ class ProductoModel {
         return $result ? (int)mysqli_affected_rows($con) : 0;
     }
 
-    // Subcategorias
     public static function eliminarSubcategorias($con, int $idProducto): void {
         $stmt = mysqli_prepare($con, "DELETE FROM productosubcategoria WHERE idProducto = ?");
         mysqli_stmt_bind_param($stmt, "i", $idProducto);
@@ -81,14 +81,19 @@ class ProductoModel {
         }
     }
 
-    // Imagenes
     public static function getImagenes($con, int $idProducto): array {
         $stmt = mysqli_prepare($con,
             "SELECT idImagen, rutaImagen, esPrincipal, orden
              FROM imagenesproducto WHERE idProducto = ? ORDER BY orden ASC");
         mysqli_stmt_bind_param($stmt, "i", $idProducto);
         mysqli_stmt_execute($stmt);
-        return mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
+        mysqli_stmt_bind_result($stmt, $idImagen, $rutaImagen, $esPrincipal, $orden);
+        $result = [];
+        while (mysqli_stmt_fetch($stmt)) {
+            $result[] = ['idImagen' => $idImagen, 'rutaImagen' => $rutaImagen, 'esPrincipal' => $esPrincipal, 'orden' => $orden];
+        }
+        mysqli_stmt_close($stmt);
+        return $result;
     }
 
     public static function insertarImagen($con, int $idProducto, string $ruta, int $esPrincipal, int $orden): bool {
@@ -98,10 +103,6 @@ class ProductoModel {
         return mysqli_stmt_execute($stmt);
     }
 
-    /**
-     * Inserta multiples imagenes en un solo INSERT.
-     * $imagenes: array de ['ruta' => string, 'esPrincipal' => int, 'orden' => int]
-     */
     public static function insertarImagenesMasivo($con, int $idProducto, array $imagenes): bool {
         if (empty($imagenes)) return true;
 
@@ -109,7 +110,6 @@ class ProductoModel {
         $sql  = "INSERT INTO imagenesproducto (idProducto, rutaImagen, esPrincipal, orden) VALUES $placeholders";
         $stmt = mysqli_prepare($con, $sql);
 
-        // Construir arrays de tipos y valores para bind dinamico
         $tipos  = str_repeat('isii', count($imagenes));
         $params = [];
         foreach ($imagenes as $img) {
@@ -135,7 +135,10 @@ class ProductoModel {
             "SELECT rutaImagen FROM imagenesproducto WHERE idImagen = ?");
         mysqli_stmt_bind_param($stmt, "i", $idImagen);
         mysqli_stmt_execute($stmt);
-        return mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
+        mysqli_stmt_bind_result($stmt, $rutaImagen);
+        $found = mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $found ? ['rutaImagen' => $rutaImagen] : null;
     }
 
     public static function eliminarImagen($con, int $idImagen): bool {
@@ -150,7 +153,6 @@ class ProductoModel {
         mysqli_query($con, "DELETE FROM imagenesproducto WHERE idProducto IN ($placeholders)");
     }
 
-    // Devuelve datos basicos del producto con municipio para el formulario de edicion.
     public static function obtener($con, int $id): ?array {
         $stmt = mysqli_prepare($con,
             "SELECT p.idProducto, p.nombreProducto, p.precio, p.ubicacion,
@@ -161,10 +163,24 @@ class ProductoModel {
              WHERE p.idProducto = ?");
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
-        return mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
+        mysqli_stmt_bind_result($stmt, $idProducto, $nombreProducto, $precio, $ubicacion,
+            $idCategoria, $idEstado, $descripcion, $idMunicipio, $idDepartamento);
+        $found = mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        if (!$found) return null;
+        return [
+            'idProducto'    => $idProducto,
+            'nombreProducto'=> $nombreProducto,
+            'precio'        => $precio,
+            'ubicacion'     => $ubicacion,
+            'idCategoria'   => $idCategoria,
+            'idEstado'      => $idEstado,
+            'descripcion'   => $descripcion,
+            'idMunicipio'   => $idMunicipio,
+            'idDepartamento'=> $idDepartamento,
+        ];
     }
 
-    // Devuelve datos completos del producto con ubicacion calculada (para vista publica).
     public static function obtenerCompleto($con, int $id, bool $conMunicipio): ?array {
         if ($conMunicipio) {
             $stmt = mysqli_prepare($con,
@@ -179,6 +195,15 @@ class ProductoModel {
                  LEFT JOIN municipio    m ON m.idMunicipio    = p.idMunicipio
                  LEFT JOIN departamento d ON d.idDepartamento = m.idDepartamento
                  WHERE p.idProducto = ?");
+            mysqli_stmt_bind_param($stmt, "i", $id);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $idProducto, $nombreProducto, $precio, $descripcion,
+                $nombreEstado, $idMunicipio, $idDepartamento, $ubicacion);
+            $found = mysqli_stmt_fetch($stmt);
+            mysqli_stmt_close($stmt);
+            if (!$found) return null;
+            return compact('idProducto','nombreProducto','precio','descripcion',
+                'nombreEstado','idMunicipio','idDepartamento','ubicacion');
         } else {
             $stmt = mysqli_prepare($con,
                 "SELECT p.idProducto, p.nombreProducto, p.precio, p.descripcion,
@@ -188,10 +213,16 @@ class ProductoModel {
                  FROM producto p
                  LEFT JOIN estado e ON e.idEstado = p.idEstado
                  WHERE p.idProducto = ?");
+            mysqli_stmt_bind_param($stmt, "i", $id);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $idProducto, $nombreProducto, $precio, $descripcion,
+                $nombreEstado, $idMunicipio, $idDepartamento, $ubicacion);
+            $found = mysqli_stmt_fetch($stmt);
+            mysqli_stmt_close($stmt);
+            if (!$found) return null;
+            return compact('idProducto','nombreProducto','precio','descripcion',
+                'nombreEstado','idMunicipio','idDepartamento','ubicacion');
         }
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        mysqli_stmt_execute($stmt);
-        return mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
     }
 
     public static function municipioExiste($con): bool {
@@ -201,7 +232,6 @@ class ProductoModel {
         return (int)($row['c'] ?? 0) > 0;
     }
 
-    // Resuelve la ruta fisica de una imagen a partir de su URL o ruta relativa.
     public static function rutaFisica(string $ruta, string $raiz): string {
         if (filter_var($ruta, FILTER_VALIDATE_URL)) {
             $path = parse_url($ruta, PHP_URL_PATH);

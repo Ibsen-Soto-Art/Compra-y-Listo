@@ -73,7 +73,13 @@ class SubcategoriaModel {
              ORDER BY nombreSubcategoria ASC");
         mysqli_stmt_bind_param($stmt, "i", $idCategoria);
         mysqli_stmt_execute($stmt);
-        return mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
+        mysqli_stmt_bind_result($stmt, $idSub, $nombreSub);
+        $result = [];
+        while (mysqli_stmt_fetch($stmt)) {
+            $result[] = ['idSubcategoria' => $idSub, 'nombreSubcategoria' => $nombreSub];
+        }
+        mysqli_stmt_close($stmt);
+        return $result;
     }
 
     public static function getStats($con): array {

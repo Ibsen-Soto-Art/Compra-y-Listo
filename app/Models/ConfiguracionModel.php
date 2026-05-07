@@ -19,7 +19,9 @@ class ConfiguracionModel {
             "SELECT valor FROM configuracion WHERE clave = ?");
         mysqli_stmt_bind_param($stmt, "s", $clave);
         mysqli_stmt_execute($stmt);
-        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-        return $row['valor'] ?? null;
+        mysqli_stmt_bind_result($stmt, $valor);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $valor ?? null;
     }
 }
