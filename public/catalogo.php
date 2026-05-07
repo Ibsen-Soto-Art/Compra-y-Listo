@@ -341,48 +341,51 @@ if(!$esBot){
     /* Footer panel */
     .filtros-panel-footer {
         display: flex;
-        gap: 10px;
-        padding: 14px 20px 18px;
-        border-top: 2px solid #e2e8f0;
+        gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid #e2e8f0;
         flex-shrink: 0;
         background: #fff;
-        box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+        box-shadow: 0 -2px 10px rgba(0,0,0,.06);
     }
     @media (max-width: 768px) {
         .filtros-panel-footer {
-            padding-bottom: max(80px, calc(60px + env(safe-area-inset-bottom, 0px)));
+            padding-bottom: max(72px, calc(52px + env(safe-area-inset-bottom, 0px)));
         }
     }
     .filtros-limpiar {
         flex: 1;
-        padding: 13px 10px;
-        border: 2px solid #cbd5e1;
-        border-radius: 12px;
-        background: #f1f5f9;
-        color: #334155;
-        font-size: 14px;
-        font-weight: 700;
+        padding: 9px 12px;
+        border: 1.5px solid #d1d5db;
+        border-radius: 8px;
+        background: transparent;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
-        display: flex; align-items: center; justify-content: center; gap: 6px;
+        display: flex; align-items: center; justify-content: center; gap: 5px;
         transition: all .15s;
-        min-height: 48px;
+        white-space: nowrap;
     }
-    .filtros-limpiar:hover, .filtros-limpiar:active { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+    .filtros-limpiar:hover, .filtros-limpiar:active {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fca5a5;
+    }
     .filtros-aplicar {
         flex: 2;
-        padding: 13px 10px;
+        padding: 9px 12px;
         border: none;
-        border-radius: 12px;
+        border-radius: 8px;
         background: #2E8B57;
         color: #fff;
-        font-size: 15px;
-        font-weight: 700;
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
-        display: flex; align-items: center; justify-content: center; gap: 6px;
+        display: flex; align-items: center; justify-content: center; gap: 5px;
         transition: background .15s;
-        min-height: 48px;
-        box-shadow: 0 4px 12px rgba(46,139,87,.28);
-        letter-spacing: .2px;
+        white-space: nowrap;
+        letter-spacing: .1px;
     }
     .filtros-aplicar:hover, .filtros-aplicar:active { background: #246d44; }
 
