@@ -2295,29 +2295,23 @@ ob_start();
                 <script>
 
                     function eliminarProducto(id){
+                        if(!confirm("¿Estás seguro de eliminar este producto?")) return;
 
-                        if(!confirm("¿Estás seguro de eliminar este producto?")){
-                            return;
-                        }
-
-                        fetch("/compraylisto/modules/Productos/eliminarProducto.php", {
+                        fetch("eliminarProducto.php", {
                             method: "POST",
-                            headers: {
-                                "Content-Type": "application/x-www-form-urlencoded"
-                            },
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             body: "id=" + id
                         })
                         .then(res => res.text())
                         .then(respuesta => {
-                            console.log(respuesta);
-
-                            toast.success("Producto eliminado correctamente");
-                            setTimeout(() => location.reload(), 1200);
+                            if(respuesta.trim() === "ok"){
+                                toast.success("Producto eliminado correctamente");
+                                setTimeout(() => location.reload(), 1200);
+                            } else {
+                                toast.error("Error al eliminar: " + respuesta.trim());
+                            }
                         })
-                        .catch(error => {
-                            console.error(error);
-                            toast.error("Error al eliminar");
-                        });
+                        .catch(() => toast.error("Error de conexión al eliminar"));
                     }
 
                     document.querySelectorAll(".card-producto").forEach(card => {
