@@ -343,7 +343,7 @@ if(!$esBot){
         display: flex;
         gap: 10px;
         padding: 14px 20px;
-        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(14px + env(safe-area-inset-bottom, 70px));
         border-top: 2px solid #e2e8f0;
         flex-shrink: 0;
         background: #fff;
