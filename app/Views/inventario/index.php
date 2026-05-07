@@ -24,6 +24,7 @@ $rolUsuario = $rowSesion['rol'];
     <link rel="preload" href="../../assets/mobile-admin.min.css" as="style">
     <link rel="stylesheet" href="../../assets/styleAll.min.css">
     <link rel="stylesheet" href="../../assets/mobile-admin.min.css">
+    <link rel="stylesheet" href="../../assets/admin-overrides.css">
     <link rel="stylesheet" href="../../assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="../../assets/bootstrap-icons/bootstrap-icons.css"></noscript>
 </head>
@@ -77,9 +78,9 @@ $rolUsuario = $rowSesion['rol'];
     <!-- CUERPO -->
     <div class="cuepo">
         <div class="ruta">
-            <a href="<?= SITE_URL ?>/admin">Página Principal</a>
+            <a href="<?= SITE_URL ?>/admin"><i class="bi bi-house-fill"></i> Panel</a>
             <span class="separator"><i class="bi bi-chevron-right"></i></span>
-            <span class="actual">Inventario</span>
+            <span class="actual"><i class="bi bi-archive-fill"></i> Inventario</span>
         </div>
 
         <div class="primeraPart">

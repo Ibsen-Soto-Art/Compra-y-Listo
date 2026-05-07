@@ -371,41 +371,58 @@ a {
     background: #f0f0f0;
 }
 
-/* Diseño de la ruta */
+/* Breadcrumb */
 .ruta {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    border-radius: 8px;
-    width: fit-content;
-    margin-top: 25px;
-    padding: 12px 25px;
-    background: linear-gradient(90deg, #ffffff, #f0f5f0);
-    border-left: 5px solid #A4D43F;
+    gap: 2px;
+    font-size: 13px;
+    margin: 20px 0 4px;
+    padding: 0;
+    background: none;
+    border: none;
+    width: auto;
 }
 
 .ruta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     text-decoration: none;
-    color: #2E6B1F;
+    color: #64748b;
     font-weight: 500;
-    transition: 0.3s;
+    padding: 5px 10px;
+    border-radius: 7px;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
 }
 
 .ruta a:hover {
-    text-decoration: underline;
-    color: #1f4d14;
+    background: #f1f5f9;
+    color: #2E8B57;
+    text-decoration: none;
 }
 
 .separator {
-    font-size: 12px;
-    color: #bbb;
+    color: #d1d5db;
+    font-size: 10px;
+    margin: 0 1px;
+    display: inline-flex;
+    align-items: center;
 }
 
-
 .actual {
-    color: #555;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #166534;
     font-weight: 600;
+    font-size: 13px;
+    padding: 5px 10px;
+    background: #f0fdf4;
+    border-radius: 7px;
+    border: 1px solid #bbf7d0;
+    white-space: nowrap;
 }
 
 /* Diseño de Edit modal */

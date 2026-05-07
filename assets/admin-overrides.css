@@ -1,0 +1,50 @@
+/* ── Breadcrumb profesional ───────────────────────────────── */
+.ruta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    font-size: 13px !important;
+    margin: 20px 0 4px !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    width: auto !important;
+    border-radius: 0 !important;
+}
+.ruta a {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    text-decoration: none !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    padding: 5px 10px !important;
+    border-radius: 7px !important;
+    transition: background .15s, color .15s !important;
+    white-space: nowrap !important;
+}
+.ruta a:hover {
+    background: #f1f5f9 !important;
+    color: #2E8B57 !important;
+    text-decoration: none !important;
+}
+.separator {
+    color: #d1d5db !important;
+    font-size: 10px !important;
+    margin: 0 1px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+.actual {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    color: #166534 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 5px 10px !important;
+    background: #f0fdf4 !important;
+    border-radius: 7px !important;
+    border: 1px solid #bbf7d0 !important;
+    white-space: nowrap !important;
+}
