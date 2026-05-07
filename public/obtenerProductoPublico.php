@@ -25,7 +25,7 @@ $sqlProducto = "SELECT
         p.descuento,
         COALESCE(c.idCategoria, pc.idCategoria, 0) AS idCategoria,
         COALESCE(c.nombreCategoria, pc.nombreCategoria, 'Sin categoría') AS nombreCategoria,
-        GROUP_CONCAT(DISTINCT CONCAT(s.idSubcategoria, '|', s.nombreSubcategoria) ORDER BY s.nombreSubcategoria SEPARATOR ';;') AS subcategorias_raw,
+        GROUP_CONCAT(DISTINCT CASE WHEN s.estadoSubcategoria = 'Activo' THEN CONCAT(s.idSubcategoria, '|', s.nombreSubcategoria) END ORDER BY s.nombreSubcategoria SEPARATOR ';;') AS subcategorias_raw,
         (SELECT COUNT(*) FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible') AS disponibles,
         (SELECT COUNT(*) FROM iteminventario WHERE idProducto=p.idProducto) AS totalStock,
         COALESCE(p.ubicacion, '') AS ubicacion

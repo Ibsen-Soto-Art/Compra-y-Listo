@@ -825,7 +825,7 @@ if(!$esBot){
 
     <!-- ══ HERO ════════════════════════════════════════════════ -->
     <?php
-        $totalProd = mysqli_fetch_row(mysqli_query($con,"SELECT COUNT(DISTINCT p.idProducto) FROM producto p INNER JOIN iteminventario inv ON inv.idProducto=p.idProducto WHERE inv.estadoItem='Disponible'"))[0];
+        $totalProd = mysqli_fetch_row(mysqli_query($con,"SELECT COUNT(DISTINCT p.idProducto) FROM producto p LEFT JOIN categoria pc ON pc.idCategoria=p.idCategoria INNER JOIN iteminventario inv ON inv.idProducto=p.idProducto WHERE inv.estadoItem='Disponible' AND (p.idCategoria IS NULL OR pc.estadoCategoria='Activo')"))[0];
         $totalCat  = mysqli_fetch_row(mysqli_query($con,"SELECT COUNT(*) FROM categoria WHERE estadoCategoria='Activo'"))[0];
         $totalVend = mysqli_fetch_row(mysqli_query($con,"SELECT COUNT(*) FROM usuarios WHERE rol='gestor' OR rol='admin'"))[0];
     ?>
@@ -911,7 +911,7 @@ if(!$esBot){
         $categoriasFiltro = [];
         while($cat = mysqli_fetch_assoc($queryCat)) $categoriasFiltro[] = $cat;
 
-        $qTotal = mysqli_query($con,"SELECT COUNT(DISTINCT p.idProducto) FROM producto p INNER JOIN iteminventario inv ON inv.idProducto=p.idProducto WHERE inv.estadoItem='Disponible'");
+        $qTotal = mysqli_query($con,"SELECT COUNT(DISTINCT p.idProducto) FROM producto p LEFT JOIN categoria pc ON pc.idCategoria=p.idCategoria INNER JOIN iteminventario inv ON inv.idProducto=p.idProducto WHERE inv.estadoItem='Disponible' AND (p.idCategoria IS NULL OR pc.estadoCategoria='Activo')");
         $totalProductos = 0;
         if($qTotal){
             $rowTotal = mysqli_fetch_row($qTotal);
@@ -1093,7 +1093,7 @@ if(!$esBot){
                         i.rutaImagen,
                         i.esPrincipal,
                         (SELECT COUNT(*) FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible') AS disponibles,
-                        (SELECT GROUP_CONCAT(DISTINCT ps2.idSubcategoria) FROM productosubcategoria ps2 WHERE ps2.idProducto = p.idProducto) AS subcatIds,
+                        (SELECT GROUP_CONCAT(DISTINCT ps2.idSubcategoria) FROM productosubcategoria ps2 INNER JOIN subcategoria s2 ON s2.idSubcategoria = ps2.idSubcategoria WHERE ps2.idProducto = p.idProducto AND s2.estadoSubcategoria = 'Activo') AS subcatIds,
                         CASE
                             WHEN mun.idMunicipio IS NOT NULL THEN CONCAT(mun.nombre, ', ', dep.nombre)
                             ELSE COALESCE(p.ubicacion, '')
@@ -1109,7 +1109,7 @@ if(!$esBot){
                     LEFT JOIN municipio   mun ON mun.idMunicipio   = p.idMunicipio
                     LEFT JOIN departamento dep ON dep.idDepartamento = mun.idDepartamento
                     WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
-                      AND (c.estadoCategoria = 'Activo' OR c.idCategoria IS NULL OR pc.estadoCategoria = 'Activo')";
+                      AND (p.idCategoria IS NULL OR pc.estadoCategoria = 'Activo')";
         } else {
             $sql = "SELECT
                         p.idProducto,
@@ -1122,7 +1122,7 @@ if(!$esBot){
                         i.rutaImagen,
                         i.esPrincipal,
                         (SELECT COUNT(*) FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible') AS disponibles,
-                        (SELECT GROUP_CONCAT(DISTINCT ps2.idSubcategoria) FROM productosubcategoria ps2 WHERE ps2.idProducto = p.idProducto) AS subcatIds,
+                        (SELECT GROUP_CONCAT(DISTINCT ps2.idSubcategoria) FROM productosubcategoria ps2 INNER JOIN subcategoria s2 ON s2.idSubcategoria = ps2.idSubcategoria WHERE ps2.idProducto = p.idProducto AND s2.estadoSubcategoria = 'Activo') AS subcatIds,
                         COALESCE(p.ubicacion, '') AS ubicacion,
                         0 AS idMun,
                         '' AS nombreDepto
@@ -1133,7 +1133,7 @@ if(!$esBot){
                     LEFT JOIN categoria c ON c.idCategoria = s.idCategoria
                     LEFT JOIN categoria pc ON pc.idCategoria = p.idCategoria
                     WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
-                      AND (c.estadoCategoria = 'Activo' OR c.idCategoria IS NULL OR pc.estadoCategoria = 'Activo')";
+                      AND (p.idCategoria IS NULL OR pc.estadoCategoria = 'Activo')";
         }
 
         if(!empty($busqueda)){
