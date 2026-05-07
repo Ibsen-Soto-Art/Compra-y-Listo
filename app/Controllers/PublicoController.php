@@ -10,4 +10,9 @@ class PublicoController extends Controller {
         // La vista sigue en public/ para que sus rutas relativas de assets funcionen sin cambios.
         require ROOT_PATH . '/public/catalogo.php';
     }
+
+    public function favicon(): void {
+        http_response_code(204);
+        exit;
+    }
 }

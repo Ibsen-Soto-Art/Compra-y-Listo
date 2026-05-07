@@ -33,6 +33,9 @@ $path       = '/' . ltrim(substr(
 // ── Definir rutas ──────────────────────────────────────────────
 $router = new Router();
 
+// Silenciar petición de favicon del navegador
+$router->get('/favicon.ico', [PublicoController::class, 'favicon']);
+
 // Páginas públicas
 $router->get('/',       [PublicoController::class, 'index']);
 $router->get('/index',  [PublicoController::class, 'index']);
