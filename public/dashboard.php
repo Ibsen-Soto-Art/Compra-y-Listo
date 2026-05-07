@@ -1,6 +1,7 @@
 ﻿<?php
     ob_start();
     session_start();
+    require_once "../config/config.php";
     include("../config/conection.php");
     $con = conection();
 
@@ -188,28 +189,28 @@
 
         <div class="main" id="menuPrincipal">
             <div class="orgmain">
-                <a href="../modules/Usuario/FormularioUser.php" class="menu-card">
+                <a href="<?= SITE_URL ?>/admin/usuarios" class="menu-card">
                     <div class="icon"><i class="bi bi-person-gear"></i></div>
                     <h3>Usuarios</h3>
                     <p>Gestión de usuarios del sistema</p>
                 </a>
             </div>
             <div class="orgmain">
-                <a href="../modules/Categoria/FormularioCat.php" class="menu-card">
+                <a href="<?= SITE_URL ?>/admin/categorias" class="menu-card">
                     <div class="icon"><i class="bi bi-bookmark-plus"></i></div>
                     <h3>Categorías</h3>
                     <p>Administrar categorías de productos</p>
                 </a>
             </div>
             <div class="orgmain">
-                <a href="../modules/Subcategoria/GestorSubcategoria.php" class="menu-card">
+                <a href="<?= SITE_URL ?>/admin/subcategorias" class="menu-card">
                     <div class="icon"><i class="bi bi-diagram-3-fill"></i></div>
                     <h3>Subcategorías</h3>
                     <p>Gestionar subcategorías de productos</p>
                 </a>
             </div>
             <div class="orgmain">
-                <a href="../modules/Productos/FormularioProduc.php" class="menu-card">
+                <a href="<?= SITE_URL ?>/admin/productos" class="menu-card">
                     <div class="icon"><i class="bi bi-boxes"></i></div>
                     <h3>Productos</h3>
                     <p>Administrar productos del sistema</p>
@@ -378,7 +379,7 @@
         <div class="dash-section">
             <div class="dash-section-header">
                 <h3><i class="bi bi-clock-history"></i> Últimos Productos Agregados</h3>
-                <a href="../modules/Productos/FormularioProduc.php" class="dash-link">Ver todos</a>
+                <a href="<?= SITE_URL ?>/admin/productos" class="dash-link">Ver todos</a>
             </div>
             <div class="dash-table-wrap">
                 <table class="dash-table">
@@ -604,7 +605,7 @@ function guardarConfig(clave, valor) {
     fd.append('clave', clave);
     fd.append('valor', valor);
 
-    fetch('../modules/Configuracion/guardarConfiguracion.php', {
+    fetch('<?= SITE_URL ?>/api/configuracion/guardar', {
         method: 'POST',
         body: fd
     })

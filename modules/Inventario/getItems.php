@@ -1,12 +1,7 @@
-<?php
-use App\Models\InventarioModel;
-
-session_start();
-header('Content-Type: application/json');
-include "../../config/conection.php";
-$con = conection();
-
-if (!isset($_SESSION['usuarios'])) { echo json_encode([]); exit; }
-
-$idProducto = (int)($_GET['idProducto'] ?? 0);
-echo json_encode(InventarioModel::getItems($con, $idProducto));
+﻿<?php
+define('ROOT_PATH', realpath(__DIR__ . '/../../'));
+define('APP_PATH',  ROOT_PATH . '/app');
+require ROOT_PATH . '/config/config.php';
+require ROOT_PATH . '/vendor/autoload.php';
+$_SERVER['REQUEST_URI'] = rtrim(parse_url(SITE_URL, PHP_URL_PATH), '/') . '/api/inventario/items';
+require ROOT_PATH . '/public/index.php';

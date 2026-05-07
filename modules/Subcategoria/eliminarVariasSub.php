@@ -1,21 +1,7 @@
-<?php
-use App\Models\SubcategoriaModel;
-
-session_start();
-header('Content-Type: application/json');
-include "../../config/conection.php";
-$con = conection();
-
-if (!isset($_SESSION['usuarios'])) {
-    echo json_encode(['status' => 'error', 'message' => 'No autorizado']);
-    exit;
-}
-
-$ids = array_values(array_filter(array_map('intval', $_POST['ids'] ?? []), fn($v) => $v > 0));
-if (empty($ids)) {
-    echo json_encode(['status' => 'error', 'message' => 'No se enviaron IDs']);
-    exit;
-}
-
-$eliminados = SubcategoriaModel::eliminarVarias($con, $ids);
-echo json_encode(['status' => 'success', 'eliminados' => $eliminados]);
+﻿<?php
+define('ROOT_PATH', realpath(__DIR__ . '/../../'));
+define('APP_PATH',  ROOT_PATH . '/app');
+require ROOT_PATH . '/config/config.php';
+require ROOT_PATH . '/vendor/autoload.php';
+$_SERVER['REQUEST_URI'] = rtrim(parse_url(SITE_URL, PHP_URL_PATH), '/') . '/api/subcategorias/eliminar-varias';
+require ROOT_PATH . '/public/index.php';

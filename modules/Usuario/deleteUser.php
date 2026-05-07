@@ -1,26 +1,7 @@
-<?php
-use App\Models\UsuarioModel;
-
-session_start();
-include "../../config/conection.php";
-$con = conection();
-
-$idLogeado  = (int)($_SESSION['idUsuario'] ?? 0);
-$idEliminar = (int)($_GET['id']            ?? 0);
-
-if (!$idLogeado || UsuarioModel::obtenerRol($con, $idLogeado) !== 'admin') {
-    die("No tienes permisos");
-}
-
-if (!$idEliminar) {
-    die("ID no valido");
-}
-
-if ($idEliminar === $idLogeado) {
-    die("No puedes eliminar tu propio usuario");
-}
-
-UsuarioModel::eliminar($con, $idEliminar);
-
-header("Location: FormularioUser.php");
-exit;
+﻿<?php
+define('ROOT_PATH', realpath(__DIR__ . '/../../'));
+define('APP_PATH',  ROOT_PATH . '/app');
+require ROOT_PATH . '/config/config.php';
+require ROOT_PATH . '/vendor/autoload.php';
+$_SERVER['REQUEST_URI'] = rtrim(parse_url(SITE_URL, PHP_URL_PATH), '/') . '/api/usuarios/eliminar';
+require ROOT_PATH . '/public/index.php';

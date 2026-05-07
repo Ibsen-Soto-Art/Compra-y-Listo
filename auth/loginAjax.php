@@ -1,5 +1,6 @@
-<?php
+﻿<?php
 session_start();
+require_once "../config/config.php";
 include("../config/conection.php");
 $con = conection();
 
@@ -27,7 +28,7 @@ $row    = mysqli_fetch_assoc($result);
 if($row && $row['contraseña'] === $password){
     $_SESSION['usuarios'] = $row['nombreUsuario'];
     $_SESSION['idUsuario'] = $row['idUsuario'];
-    echo json_encode(["status"=>"success","redirect"=>"../public/dashboardAdmin.php"]);
+    echo json_encode(["status"=>"success","redirect"=> SITE_URL . "/admin"]);
 } else {
     echo json_encode(["status"=>"error","message"=>"Correo o contraseña incorrectos."]);
 }

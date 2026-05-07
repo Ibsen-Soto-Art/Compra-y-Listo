@@ -1,20 +1,7 @@
-<?php
-use App\Models\SubcategoriaModel;
-
-session_start();
-header('Content-Type: application/json');
-include "../../config/conection.php";
-$con = conection();
-
-if (!isset($_SESSION['usuarios'])) {
-    echo json_encode([]);
-    exit;
-}
-
-$idCategoria = (int)($_GET['idCategoria'] ?? 0);
-if ($idCategoria <= 0) {
-    echo json_encode([]);
-    exit;
-}
-
-echo json_encode(SubcategoriaModel::getPorCategoria($con, $idCategoria));
+﻿<?php
+define('ROOT_PATH', realpath(__DIR__ . '/../../'));
+define('APP_PATH',  ROOT_PATH . '/app');
+require ROOT_PATH . '/config/config.php';
+require ROOT_PATH . '/vendor/autoload.php';
+$_SERVER['REQUEST_URI'] = rtrim(parse_url(SITE_URL, PHP_URL_PATH), '/') . '/api/subcategorias/por-categoria';
+require ROOT_PATH . '/public/index.php';
