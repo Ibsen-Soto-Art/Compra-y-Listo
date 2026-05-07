@@ -1,6 +1,8 @@
 ﻿<?php
 ob_start();
-include("../config/conection.php");
+if (!defined('ROOT_PATH')) define('ROOT_PATH', dirname(__DIR__));
+if (!defined('SITE_URL'))  require_once ROOT_PATH . "/config/config.php";
+include(ROOT_PATH . "/config/conection.php");
 $con = conection();
 
 /* WhatsApp dinámico */

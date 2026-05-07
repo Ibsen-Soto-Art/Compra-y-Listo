@@ -1,6 +1,7 @@
 <?php
 ob_start();
-include("../config/conection.php");
+if (!defined('ROOT_PATH')) define('ROOT_PATH', dirname(__DIR__));
+include(ROOT_PATH . "/config/conection.php");
 $con = conection();
 ob_end_clean();
 

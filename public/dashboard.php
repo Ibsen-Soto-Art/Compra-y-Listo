@@ -1,8 +1,9 @@
 ﻿<?php
     ob_start();
+    if (!defined('ROOT_PATH')) define('ROOT_PATH', dirname(__DIR__));
     session_start();
-    require_once "../config/config.php";
-    include("../config/conection.php");
+    require_once ROOT_PATH . "/config/config.php";
+    include(ROOT_PATH . "/config/conection.php");
     $con = conection();
 
     if(!isset($_SESSION['idUsuario'])){
