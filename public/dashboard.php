@@ -1,13 +1,13 @@
 ﻿<?php
     ob_start();
     if (!defined('ROOT_PATH')) define('ROOT_PATH', dirname(__DIR__));
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) session_start();
     require_once ROOT_PATH . "/config/config.php";
     include(ROOT_PATH . "/config/conection.php");
     $con = conection();
 
     if(!isset($_SESSION['idUsuario'])){
-        header("location:" . SITE_URL . "/auth/login.php");
+        header("location:" . SITE_URL . "/");
         exit();
     }
 
