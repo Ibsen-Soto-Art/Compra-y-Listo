@@ -21,10 +21,13 @@ class UbicacionModel {
              WHERE idDepartamento = ? ORDER BY nombre ASC");
         mysqli_stmt_bind_param($stmt, "i", $idDepartamento);
         mysqli_stmt_execute($stmt);
+        $res    = mysqli_stmt_get_result($stmt);
         $result = [];
-        while ($r = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt))) {
+        while ($r = mysqli_fetch_assoc($res)) {
             $result[] = ["id" => (int)$r['idMunicipio'], "nombre" => $r['nombre']];
         }
+        mysqli_free_result($res);
+        mysqli_stmt_close($stmt);
         return $result;
     }
 }

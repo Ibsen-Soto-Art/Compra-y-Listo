@@ -1019,7 +1019,7 @@ ob_start();
                                         return;
                                     }
                                     widget.innerHTML = '<div id="subcatCheckboxes" style="padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"><span style="color:#94a3b8;font-size:13px"><i class="bi bi-arrow-repeat"></i> Cargando...</span></div>';
-                                    fetch(`../Subcategoria/getSubcategoriasPorCategoria.php?idCategoria=${val}`)
+                                    fetch(`<?= SITE_URL ?>/api/subcategorias/por-categoria?idCategoria=${val}`)
                                     .then(r => r.json())
                                     .then(data => window._renderSubcats(data, []))
                                     .catch(() => {
@@ -1071,7 +1071,7 @@ ob_start();
                                     preview.style.display = "none";
                                     if(!idD) { selMun.innerHTML = '<option value="">— Primero selecciona un departamento —</option>'; return; }
 
-                                    fetch(`../Ubicacion/getMunicipios.php?idDepartamento=${idD}`)
+                                    fetch(`<?= SITE_URL ?>/api/ubicacion/municipios?idDepartamento=${idD}`)
                                     .then(r => r.json())
                                     .then(data => {
                                         selMun.innerHTML = '<option value="">— Seleccionar municipio —</option>';
@@ -2065,7 +2065,7 @@ ob_start();
                         if(data.idCat){
                             const divSubcat = document.getElementById("subcatCheckboxes");
                             divSubcat.innerHTML = '<span style="color:#94a3b8;font-size:13px"><i class="bi bi-arrow-repeat"></i> Cargando...</span>';
-                            fetch(`../Subcategoria/getSubcategoriasPorCategoria.php?idCategoria=${data.idCat}`)
+                            fetch(`<?= SITE_URL ?>/api/subcategorias/por-categoria?idCategoria=${data.idCat}`)
                             .then(r => r.json())
                             .then(subs => {
                                 if(!subs.length){
@@ -2769,7 +2769,7 @@ ob_start();
                 const lista = document.getElementById("listaItemsModal");
                 lista.innerHTML = '<div class="inv-empty-msg"><i class="bi bi-arrow-repeat spin"></i> Cargando...</div>';
 
-                fetch(`../Inventario/getItems.php?idProducto=${id}`)
+                fetch(`<?= SITE_URL ?>/api/inventario/items?idProducto=${id}`)
                 .then(r => r.json())
                 .then(items => {
                     _invItems = items;
@@ -2902,7 +2902,7 @@ ob_start();
                 const fd = new FormData();
                 fd.append("ids[]", idItem);
                 fd.append("estadoItem", nuevoEstado);
-                fetch("../Inventario/cambiarEstadoItems.php", { method:"POST", body: fd })
+                fetch("<?= SITE_URL ?>/api/inventario/cambiar-estado", { method:"POST", body: fd })
                 .then(r => r.json())
                 .then(data => {
                     btn.disabled = false;
@@ -2929,7 +2929,7 @@ ob_start();
                 fd.append("estadoItem", nuevoEstado);
 
                 setButtonsBulkLoading(true);
-                fetch("../Inventario/cambiarEstadoItems.php", { method:"POST", body: fd })
+                fetch("<?= SITE_URL ?>/api/inventario/cambiar-estado", { method:"POST", body: fd })
                 .then(r => r.json())
                 .then(data => {
                     setButtonsBulkLoading(false);
@@ -2961,7 +2961,7 @@ ob_start();
                 if(!confirm("¿Eliminar esta unidad?")) return;
                 const fd = new FormData();
                 fd.append("id", idItem);
-                fetch("../Inventario/deleteItem.php", { method:"POST", body: fd })
+                fetch("<?= SITE_URL ?>/api/inventario/eliminar", { method:"POST", body: fd })
                 .then(r => r.json())
                 .then(data => {
                     if(data.status === "success"){
@@ -2986,7 +2986,7 @@ ob_start();
                 const promises = ids.map(id => {
                     const fd = new FormData();
                     fd.append("id", id);
-                    return fetch("../Inventario/deleteItem.php", { method:"POST", body: fd }).then(r => r.json());
+                    return fetch("<?= SITE_URL ?>/api/inventario/eliminar", { method:"POST", body: fd }).then(r => r.json());
                 });
 
                 Promise.all(promises).then(() => {
@@ -3013,7 +3013,7 @@ ob_start();
                 fd.append("cantidad", cant);
                 fd.append("estadoItem", "Disponible");
 
-                fetch("../Inventario/agregarItemsMasivo.php", { method:"POST", body: fd })
+                fetch("<?= SITE_URL ?>/api/inventario/agregar-masivo", { method:"POST", body: fd })
                 .then(r => r.json())
                 .then(data => {
                     btn.disabled = false;

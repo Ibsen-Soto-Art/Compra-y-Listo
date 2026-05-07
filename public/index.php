@@ -20,6 +20,7 @@ use App\Controllers\SubcategoriaController;
 use App\Controllers\UsuarioController;
 use App\Controllers\InventarioController;
 use App\Controllers\ConfiguracionController;
+use App\Controllers\UbicacionController;
 
 // ── Calcular path relativo (quitar base del SITE_URL) ──────────
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
@@ -95,6 +96,10 @@ $router->post('/api/inventario/eliminar',            [InventarioController::clas
 $router->post('/api/inventario/eliminar-varios',     [InventarioController::class, 'eliminarVarios']);
 $router->post('/api/inventario/agregar-masivo',      [InventarioController::class, 'agregarMasivo']);
 $router->post('/api/inventario/cambiar-estado',      [InventarioController::class, 'cambiarEstado']);
+
+// Ubicacion
+$router->get('/api/ubicacion/departamentos', [UbicacionController::class, 'departamentos']);
+$router->get('/api/ubicacion/municipios',    [UbicacionController::class, 'municipios']);
 
 // Configuracion
 $router->post('/api/configuracion/guardar', [ConfiguracionController::class, 'guardar']);
