@@ -1114,8 +1114,8 @@ ob_start();
                 btn.dataset.estado = nuevo;
                 btn.title = nuevo === "Activo" ? "Ocultar" : "Activar";
                 btn.innerHTML = nuevo === "Activo"
-                    ? '<i class="bi bi-eye-slash-fill"></i> Ocultar'
-                    : '<i class="bi bi-eye-fill"></i> Activar';
+                    ? '<i class="bi bi-eye-slash-fill"></i>'
+                    : '<i class="bi bi-eye-fill"></i>';
 
                 badge.className = `sub-estado-badge sub-estado-${nuevo.toLowerCase()}`;
                 badge.innerHTML = nuevo === "Activo"
