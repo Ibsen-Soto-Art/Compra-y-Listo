@@ -5,8 +5,8 @@ require_once "Model.php";
 $con = conection();
 
 if (!isset($_SESSION['usuarios'])) { echo json_encode(['ok' => false, 'error' => 'No autorizado']); exit; }
-
-$idUsuario   = (int)$_SESSION['idUsuario'];
+$idUsuario = (int)$_SESSION['idUsuario'];
+session_write_close();
 $nombre      = trim($_POST['nombre']      ?? '');
 $precio      = (float)($_POST['precio']   ?? 0);
 $idMunicipio = (int)($_POST['idMunicipio'] ?? 0);

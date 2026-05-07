@@ -5,6 +5,7 @@ require_once "Model.php";
 $con = conection();
 
 if (!isset($_SESSION['usuarios'])) { echo json_encode(['ok' => false, 'error' => 'No autorizado']); exit; }
+session_write_close();
 
 $idProducto      = (int)($_POST['idProducto']  ?? 0);
 if (!$idProducto) { echo json_encode(['ok' => false, 'error' => 'ID no válido']); exit; }

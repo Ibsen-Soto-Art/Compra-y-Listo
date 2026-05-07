@@ -6,6 +6,7 @@ require_once "ImagenHelper.php";
 $con = conection();
 
 if (!isset($_SESSION['usuarios'])) { echo json_encode(['ok' => false, 'error' => 'No autorizado']); exit; }
+session_write_close(); // liberar el lock de sesión para permitir requests paralelos
 
 $idProducto = (int)($_POST['idProducto'] ?? 0);
 $orden      = (int)($_POST['orden']      ?? 0);
