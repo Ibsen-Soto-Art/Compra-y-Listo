@@ -5,14 +5,18 @@
 # ── Configuración de Rutas ──────────────────────────────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /compraylisto/
+
+    # LOCAL (XAMPP): RewriteBase /compraylisto/
+    # PRODUCCION:    RewriteBase /
+    # Cambia la línea de abajo según el entorno donde estés subiendo.
+    RewriteBase /
 
     # Bloquear acceso directo a carpetas sensibles
     RewriteRule ^config/   - [F,L]
     RewriteRule ^vendor/   - [F,L]
     RewriteRule ^app/      - [F,L]
 
-    # Dejar pasar archivos y carpetas que existen fisicamente
+    # Dejar pasar archivos y carpetas que existen físicamente
     # (assets, uploads, modules AJAX, auth, etc.)
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
