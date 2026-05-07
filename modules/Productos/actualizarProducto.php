@@ -2,13 +2,12 @@
 session_start();
 include "../../config/conection.php";
 require_once "Model.php";
-require_once "ImagenHelper.php";
 $con = conection();
 
-if (!isset($_SESSION['usuarios'])) { echo "No autorizado"; exit; }
+if (!isset($_SESSION['usuarios'])) { echo json_encode(['ok' => false, 'error' => 'No autorizado']); exit; }
 
 $idProducto      = (int)($_POST['idProducto']  ?? 0);
-if (!$idProducto) { echo "ID no valido"; exit; }
+if (!$idProducto) { echo json_encode(['ok' => false, 'error' => 'ID no válido']); exit; }
 
 $nombre          = trim($_POST['nombre']       ?? '');
 $precio          = (float)($_POST['precio']    ?? 0);
@@ -19,7 +18,7 @@ $subcats         = array_values(array_filter(array_map('intval', $_POST['subcate
 $enOferta        = isset($_POST['enOferta']) ? 1 : 0;
 $descuento       = $enOferta ? min(99, max(0, (float)($_POST['descuento'] ?? 0))) : 0;
 
-if (!$nombre || !$precio || !$idCategoria) { echo "Datos incompletos"; exit; }
+if (!$nombre || !$precio || !$idCategoria) { echo json_encode(['ok' => false, 'error' => 'Datos incompletos']); exit; }
 
 // Resolver ubicacion: usar la nueva si viene, conservar la existente si no
 if ($idMunicipioPost !== '' && (int)$idMunicipioPost > 0) {
@@ -40,42 +39,15 @@ if (!ProductoModel::actualizar($con, $idProducto, [
     'idCategoria' => $idCategoria,
     'enOferta'    => $enOferta,
     'descuento'   => $descuento,
-])) { echo "Error al actualizar producto"; exit; }
+])) { echo json_encode(['ok' => false, 'error' => 'Error al actualizar producto']); exit; }
 
 // Actualizar subcategorias: borrar y reinsertar
 ProductoModel::eliminarSubcategorias($con, $idProducto);
 ProductoModel::insertarSubcategorias($con, $idProducto, $subcats);
 
-// Guardar nuevas imagenes
+// Crear carpeta de imágenes por adelantado
 $carpeta = "../../uploads/productos/$idProducto/";
 if (!file_exists($carpeta)) mkdir($carpeta, 0777, true);
-
-$ordenes      = $_POST['orden'] ?? [];
-$imagenesRows = [];
-
-if (isset($_FILES['imagenes'])) {
-    foreach ($_FILES['imagenes']['tmp_name'] as $key => $tmp) {
-        if ($_FILES['imagenes']['error'][$key] !== 0) continue;
-
-        $resultado = ImagenHelper::procesarYGuardar($tmp, $carpeta);
-        if (!$resultado['ok']) {
-            error_log("actualizarProducto imagen[$key]: " . $resultado['error']);
-            continue;
-        }
-
-        $orden       = (int)($ordenes[$key] ?? $key);
-        $rutaBD      = rtrim(SITE_URL, '/') . "/uploads/productos/$idProducto/" . $resultado['nombreArchivo'];
-        $imagenesRows[] = [
-            'ruta'        => $rutaBD,
-            'esPrincipal' => $orden === 0 ? 1 : 0,
-            'orden'       => $orden,
-        ];
-    }
-}
-
-if (!empty($imagenesRows)) {
-    ProductoModel::insertarImagenesMasivo($con, $idProducto, $imagenesRows);
-}
 
 // Reordenar imagenes existentes
 foreach ($_POST['ordenExistentes'] ?? [] as $idImagen => $orden) {
@@ -84,4 +56,4 @@ foreach ($_POST['ordenExistentes'] ?? [] as $idImagen => $orden) {
     ProductoModel::actualizarOrdenImagen($con, (int)$idImagen, $orden, $esPrincipal);
 }
 
-echo "ok";
+echo json_encode(['ok' => true, 'idProducto' => $idProducto]);

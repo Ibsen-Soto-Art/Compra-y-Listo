@@ -2137,13 +2137,16 @@ ob_start();
                     }
 
                     // Redimensiona y convierte a JPEG en el navegador antes de subir.
-                    // Procesa una imagen a la vez para no bloquear el thread principal.
-                    function redimensionarImagenCliente(file, maxPx = 1600, quality = 0.85) {
+                    // Objetivo: producir un blob < 1.5 MB para que el servidor lo mueva
+                    // directamente sin pasar por GD (camino rápido).
+                    // Si el primer intento supera el límite se recomprime a menor calidad.
+                    const CLIENTE_MAX_BYTES = 1_400_000; // 1.4 MB — margen bajo el umbral del servidor
+
+                    function redimensionarImagenCliente(file, maxPx = 1200, quality = 0.82) {
                         return new Promise((resolve) => {
                             if (!file.type.startsWith("image/")) { resolve(file); return; }
-                            if (!window.OffscreenCanvas && !document.createElement("canvas").getContext) {
-                                resolve(file); return; // fallback: sin soporte Canvas
-                            }
+                            if (!document.createElement("canvas").getContext) { resolve(file); return; }
+
                             const img = new Image();
                             const url = URL.createObjectURL(file);
                             img.onload = () => {
@@ -2159,7 +2162,16 @@ ob_start();
                                 ctx.fillStyle = "#ffffff";
                                 ctx.fillRect(0, 0, width, height);
                                 ctx.drawImage(img, 0, 0, width, height);
-                                canvas.toBlob(blob => resolve(blob || file), "image/jpeg", quality);
+
+                                // Primer intento con la calidad pedida
+                                canvas.toBlob(blob => {
+                                    if (!blob) { resolve(file); return; }
+                                    // Si ya es pequeño, listo
+                                    if (blob.size <= CLIENTE_MAX_BYTES) { resolve(blob); return; }
+                                    // Segundo intento: bajar calidad hasta que quepa
+                                    const q2 = Math.max(0.60, quality - 0.15);
+                                    canvas.toBlob(blob2 => resolve(blob2 || blob), "image/jpeg", q2);
+                                }, "image/jpeg", quality);
                             };
                             img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
                             img.src = url;
@@ -2194,33 +2206,55 @@ ob_start();
                         const fill = document.getElementById("_barraGuardarFill");
 
                         try {
-                            // Comprimir todas en paralelo — mucho mas rapido que en serie
-                            fill.style.width = "10%";
+                            // Paso 1: comprimir todas las imágenes nuevas en paralelo (CPU cliente)
+                            fill.style.width = "15%";
                             const comprimidas = await Promise.all(
                                 imagenes.map(f => redimensionarImagenCliente(f))
                             );
 
+                            // Paso 2: guardar datos del producto (sin imágenes) — rápido
                             btn.textContent = "Guardando...";
-                            fill.style.width = "60%";
+                            fill.style.width = "40%";
 
                             const formData = new FormData(form);
                             if (id) formData.append("idProducto", id);
-                            comprimidas.forEach((blob, i) => {
-                                formData.append("imagenes[]", blob, "img" + i + ".jpg");
-                            });
+                            // Quitar cualquier campo de imagen del form por si acaso
+                            formData.delete("imagenes[]");
 
                             const res  = await fetch(url, { method: "POST", body: formData });
-                            fill.style.width = "90%";
-                            const resp = await res.text();
-                            fill.style.width = "100%";
+                            const data = await res.json();
 
-                            if (resp.trim() !== "ok") {
-                                toast.error(resp.trim());
+                            if (!data.ok) {
+                                toast.error(data.error || "Error al guardar");
                                 btn.disabled = false;
                                 btn.textContent = "Guardar";
                                 barraContenedor.remove();
                                 return;
                             }
+
+                            fill.style.width = "60%";
+
+                            // Paso 3: subir cada imagen en paralelo — cada una en su propio request
+                            // El servidor procesa todas simultáneamente en procesos PHP separados
+                            const idProducto = data.idProducto;
+                            if (comprimidas.length > 0) {
+                                btn.textContent = `Subiendo ${comprimidas.length} imagen${comprimidas.length > 1 ? 'es' : ''}...`;
+                                let subidas = 0;
+                                await Promise.all(comprimidas.map((blob, i) => {
+                                    const fd = new FormData();
+                                    fd.append("idProducto", idProducto);
+                                    fd.append("orden", i);
+                                    fd.append("imagen", blob, "img" + i + ".jpg");
+                                    return fetch("subirImagen.php", { method: "POST", body: fd })
+                                        .then(r => r.json())
+                                        .then(() => {
+                                            subidas++;
+                                            fill.style.width = (60 + Math.round(subidas / comprimidas.length * 35)) + "%";
+                                        });
+                                }));
+                            }
+
+                            fill.style.width = "100%";
                             toast.success("Guardado correctamente");
                             location.reload();
                         } catch {

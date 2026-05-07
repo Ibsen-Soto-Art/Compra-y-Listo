@@ -1866,10 +1866,10 @@ font-size:14px;
 }
 
 .CartaProducto {
-    display: flex;
-    gap: 25px;
-    flex-wrap: wrap;
-    margin: 0 35px 0 35px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 20px;
+    margin: 0 35px;
     max-height: 1000px;
     overflow: hidden;
     transition: all 0.4s ease;
@@ -1884,13 +1884,13 @@ font-size:14px;
 
 /* ACTIVO */
 .CartaProducto.activo{
-    max-height: 2000px;
+    max-height: 9999px;
     opacity: 1;
 }
 
 /* ── Card Producto ────────────────────────────────────────── */
 .card-producto {
-    width: 230px;
+    width: 100%;
     background: #fff;
     border-radius: 16px;
     overflow: hidden;
@@ -4904,7 +4904,7 @@ font-size:14px;
    ≤ 1024px  —  Tablet landscape / laptop pequeño
 ────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-    .CartaProducto       { margin: 0 20px; gap: 18px; }
+    .CartaProducto       { margin: 0 20px; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
     .filtro-barra        { margin: 0 20px 14px; }
     .dash-stats          { padding: 16px 20px; }
     .dash-section        { margin: 0 20px; }

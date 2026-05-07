@@ -2,10 +2,9 @@
 session_start();
 include "../../config/conection.php";
 require_once "Model.php";
-require_once "ImagenHelper.php";
 $con = conection();
 
-if (!isset($_SESSION['usuarios'])) { echo "No autorizado"; exit; }
+if (!isset($_SESSION['usuarios'])) { echo json_encode(['ok' => false, 'error' => 'No autorizado']); exit; }
 
 $idUsuario   = (int)$_SESSION['idUsuario'];
 $nombre      = trim($_POST['nombre']      ?? '');
@@ -17,7 +16,7 @@ $subcats     = array_values(array_filter(array_map('intval', $_POST['subcategori
 $enOferta    = isset($_POST['enOferta']) ? 1 : 0;
 $descuento   = $enOferta ? min(99, max(0, (float)($_POST['descuento'] ?? 0))) : 0;
 
-if (!$nombre || !$precio || !$idCategoria) { echo "Datos incompletos"; exit; }
+if (!$nombre || !$precio || !$idCategoria) { echo json_encode(['ok' => false, 'error' => 'Datos incompletos']); exit; }
 
 $ubicacion = $idMunicipio ? ProductoModel::getUbicacion($con, $idMunicipio) : '';
 
@@ -33,40 +32,13 @@ $idProducto = ProductoModel::insertar($con, [
     'descuento'   => $descuento,
 ]);
 
-if (!$idProducto) { echo "Error al guardar producto"; exit; }
+if (!$idProducto) { echo json_encode(['ok' => false, 'error' => 'Error al guardar producto']); exit; }
 
 ProductoModel::insertarSubcategorias($con, $idProducto, $subcats);
 
-// Guardar imagenes
+// Crear carpeta de imágenes por adelantado
 $carpeta = "../../uploads/productos/$idProducto/";
 if (!file_exists($carpeta)) mkdir($carpeta, 0777, true);
-
-$ordenes      = $_POST['orden'] ?? [];
-$imagenesRows = [];
-
-if (isset($_FILES['imagenes'])) {
-    foreach ($_FILES['imagenes']['tmp_name'] as $key => $tmp) {
-        if ($_FILES['imagenes']['error'][$key] !== 0) continue;
-
-        $resultado = ImagenHelper::procesarYGuardar($tmp, $carpeta);
-        if (!$resultado['ok']) {
-            error_log("crearProducto imagen[$key]: " . $resultado['error']);
-            continue;
-        }
-
-        $orden       = (int)($ordenes[$key] ?? $key);
-        $rutaBD      = rtrim(SITE_URL, '/') . "/uploads/productos/$idProducto/" . $resultado['nombreArchivo'];
-        $imagenesRows[] = [
-            'ruta'        => $rutaBD,
-            'esPrincipal' => $orden === 0 ? 1 : 0,
-            'orden'       => $orden,
-        ];
-    }
-}
-
-if (!empty($imagenesRows)) {
-    ProductoModel::insertarImagenesMasivo($con, $idProducto, $imagenesRows);
-}
 
 // Auto-crear unidades de inventario si se indico cantidad
 $cantidad = (int)($_POST['cantidad'] ?? 0);
@@ -96,4 +68,4 @@ if ($cantidad > 0) {
     }
 }
 
-echo "ok";
+echo json_encode(['ok' => true, 'idProducto' => $idProducto]);

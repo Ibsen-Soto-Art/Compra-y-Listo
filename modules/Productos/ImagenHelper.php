@@ -6,7 +6,7 @@
 class ImagenHelper {
 
     private const MAX_BYTES    = 8 * 1024 * 1024; // 8 MB — limite de rechazo
-    private const CLIENTE_MAX  = 1_500_000;        // 1.5 MB — umbral "ya viene comprimido"
+    private const CLIENTE_MAX  = 2_000_000;        // 2 MB — umbral "ya viene comprimido"
     private const MAX_PX       = 1200;
     private const JPEG_QUALITY = 82;
     private const MIMES_OK     = ['image/jpeg', 'image/png', 'image/webp'];
