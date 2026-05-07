@@ -931,37 +931,99 @@ ob_start();
                             </select>
 
                             <label>Subcategorías <small style="color:#94a3b8">(opcional)</small></label>
-                            <div id="subcatCheckboxes" style="min-height:40px;padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;">
-                                <span style="color:#94a3b8;font-size:13px">Selecciona primero una categoría</span>
+                            <div id="subcatWidget">
+                                <div id="subcatCheckboxes" style="min-height:40px;padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;">
+                                    <span style="color:#94a3b8;font-size:13px">Selecciona primero una categoría</span>
+                                </div>
                             </div>
 
                             <script>
                             (function(){
-                                const selCat = document.getElementById("selectCategoriaProducto");
-                                const divSubcat = document.getElementById("subcatCheckboxes");
+                                const selCat   = document.getElementById("selectCategoriaProducto");
+                                const widget   = document.getElementById("subcatWidget");
+
+                                // Renderiza el widget completo con buscador + lista con scroll
+                                // subs: [{idSubcategoria, nombreSubcategoria}]
+                                // seleccionados: array de ids ya marcados
+                                window._renderSubcats = function(subs, seleccionados = []) {
+                                    if (!subs || !subs.length) {
+                                        widget.innerHTML = '<div id="subcatCheckboxes" style="min-height:40px;padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"><span style="color:#94a3b8;font-size:13px">No hay subcategorías activas para esta categoría</span></div>';
+                                        return;
+                                    }
+
+                                    widget.innerHTML = `
+                                        <div style="position:relative;margin-bottom:6px;">
+                                            <i class="bi bi-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:13px;pointer-events:none"></i>
+                                            <input id="subcatFiltro" type="text" placeholder="Buscar subcategoría..."
+                                                style="width:100%;box-sizing:border-box;padding:7px 10px 7px 32px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none;background:#fff;"
+                                                autocomplete="off">
+                                        </div>
+                                        <div id="subcatCheckboxes"
+                                            style="max-height:180px;overflow-y:auto;padding:6px 8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;display:flex;flex-direction:column;gap:2px;">
+                                        </div>
+                                        <div id="subcatContador" style="font-size:11px;color:#94a3b8;margin-top:4px;text-align:right;"></div>`;
+
+                                    const lista    = document.getElementById("subcatCheckboxes");
+                                    const filtro   = document.getElementById("subcatFiltro");
+                                    const contador = document.getElementById("subcatContador");
+
+                                    function renderItems(query) {
+                                        const q = query.toLowerCase().trim();
+                                        const filtradas = q ? subs.filter(s => s.nombreSubcategoria.toLowerCase().includes(q)) : subs;
+                                        lista.innerHTML = filtradas.length
+                                            ? filtradas.map(s => {
+                                                const marcado = seleccionados.includes(s.idSubcategoria) ? 'checked' : '';
+                                                const resaltado = q
+                                                    ? s.nombreSubcategoria.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark style="background:#fef08a;border-radius:2px">$1</mark>')
+                                                    : s.nombreSubcategoria;
+                                                return `<label style="display:flex;align-items:center;gap:8px;padding:5px 6px;cursor:pointer;font-size:13px;border-radius:6px;transition:background .15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''">
+                                                    <input type="checkbox" name="subcategorias[]" value="${s.idSubcategoria}" style="accent-color:#6366f1;width:15px;height:15px;flex-shrink:0" ${marcado}>
+                                                    <span>${resaltado}</span>
+                                                </label>`;
+                                            }).join('')
+                                            : '<span style="color:#94a3b8;font-size:13px;padding:4px">Sin resultados</span>';
+
+                                        // Actualizar seleccionados desde checkboxes actuales
+                                        lista.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                                            cb.addEventListener('change', () => {
+                                                const marcados = lista.querySelectorAll('input:checked').length;
+                                                contador.textContent = marcados > 0 ? `${marcados} seleccionada${marcados>1?'s':''}` : '';
+                                            });
+                                        });
+
+                                        const marcados = lista.querySelectorAll('input:checked').length;
+                                        contador.textContent = marcados > 0 ? `${marcados} seleccionada${marcados>1?'s':''}` : '';
+                                    }
+
+                                    renderItems('');
+                                    filtro.addEventListener('input', () => {
+                                        // Guardar ids actualmente marcados antes de re-renderizar
+                                        lista.querySelectorAll('input:checked').forEach(cb => {
+                                            if (!seleccionados.includes(parseInt(cb.value))) seleccionados.push(parseInt(cb.value));
+                                        });
+                                        lista.querySelectorAll('input:not(:checked)').forEach(cb => {
+                                            const idx = seleccionados.indexOf(parseInt(cb.value));
+                                            if (idx !== -1) seleccionados.splice(idx, 1);
+                                        });
+                                        renderItems(filtro.value);
+                                    });
+                                    filtro.addEventListener('keydown', e => {
+                                        if (e.key === 'Escape') { filtro.value = ''; renderItems(''); }
+                                    });
+                                };
 
                                 selCat.addEventListener("change", function(){
                                     const val = this.value;
                                     if(!val){
-                                        divSubcat.innerHTML = '<span style="color:#94a3b8;font-size:13px">Selecciona primero una categoría</span>';
+                                        widget.innerHTML = '<div id="subcatCheckboxes" style="min-height:40px;padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"><span style="color:#94a3b8;font-size:13px">Selecciona primero una categoría</span></div>';
                                         return;
                                     }
-                                    divSubcat.innerHTML = '<span style="color:#94a3b8;font-size:13px"><i class="bi bi-arrow-repeat"></i> Cargando...</span>';
+                                    widget.innerHTML = '<div id="subcatCheckboxes" style="padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"><span style="color:#94a3b8;font-size:13px"><i class="bi bi-arrow-repeat"></i> Cargando...</span></div>';
                                     fetch(`../Subcategoria/getSubcategoriasPorCategoria.php?idCategoria=${val}`)
                                     .then(r => r.json())
-                                    .then(data => {
-                                        if(!data.length){
-                                            divSubcat.innerHTML = '<span style="color:#94a3b8;font-size:13px">No hay subcategorías activas para esta categoría</span>';
-                                            return;
-                                        }
-                                        divSubcat.innerHTML = data.map(s => `
-                                            <label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font-size:13px;">
-                                                <input type="checkbox" name="subcategorias[]" value="${s.idSubcategoria}" style="accent-color:#6366f1;width:16px;height:16px;">
-                                                ${s.nombreSubcategoria}
-                                            </label>`).join('');
-                                    })
+                                    .then(data => window._renderSubcats(data, []))
                                     .catch(() => {
-                                        divSubcat.innerHTML = '<span style="color:#dc2626;font-size:13px">Error al cargar subcategorías</span>';
+                                        widget.innerHTML = '<div id="subcatCheckboxes" style="padding:8px;border:1px solid #e2e8f0;border-radius:8px;"><span style="color:#dc2626;font-size:13px">Error al cargar subcategorías</span></div>';
                                     });
                                 });
                             })();
@@ -2010,13 +2072,7 @@ ob_start();
                                     divSubcat.innerHTML = '<span style="color:#94a3b8;font-size:13px">Sin subcategorías</span>';
                                     return;
                                 }
-                                divSubcat.innerHTML = subs.map(s => `
-                                    <label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font-size:13px;">
-                                        <input type="checkbox" name="subcategorias[]" value="${s.idSubcategoria}"
-                                            style="accent-color:#6366f1;width:16px;height:16px;"
-                                            ${data.subcats && data.subcats.includes(s.idSubcategoria) ? 'checked' : ''}>
-                                        ${s.nombreSubcategoria}
-                                    </label>`).join('');
+                                window._renderSubcats(subs, data.subcats || []);
                             })
                             .catch(() => { divSubcat.innerHTML = '<span style="color:#dc2626;font-size:13px">Error</span>'; });
                         }
