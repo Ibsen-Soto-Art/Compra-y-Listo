@@ -1,5 +1,6 @@
 <?php
-require '../../vendor/autoload.php';
+if (!defined('ROOT_PATH')) define('ROOT_PATH', realpath(__DIR__ . '/../../'));
+require ROOT_PATH . '/vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -7,7 +8,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 
-include("../../config/conection.php");
+if (!function_exists('conection')) require_once ROOT_PATH . '/config/conection.php';
 $con = conection();
 
 $spreadsheet = new Spreadsheet();
