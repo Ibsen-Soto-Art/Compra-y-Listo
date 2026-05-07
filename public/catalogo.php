@@ -342,12 +342,16 @@ if(!$esBot){
     .filtros-panel-footer {
         display: flex;
         gap: 10px;
-        padding: 14px 20px;
-        padding-bottom: calc(14px + env(safe-area-inset-bottom, 70px));
+        padding: 14px 20px 18px;
         border-top: 2px solid #e2e8f0;
         flex-shrink: 0;
         background: #fff;
         box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+    }
+    @media (max-width: 768px) {
+        .filtros-panel-footer {
+            padding-bottom: max(80px, calc(60px + env(safe-area-inset-bottom, 0px)));
+        }
     }
     .filtros-limpiar {
         flex: 1;
