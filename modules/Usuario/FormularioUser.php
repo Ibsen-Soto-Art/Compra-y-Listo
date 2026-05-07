@@ -448,6 +448,10 @@ ob_start();
                     modalEditar.style.display = "none";
                 });
 
+                window.addEventListener("click", (e) => {
+                    if (e.target === modalEditar) modalEditar.style.display = "none";
+                });
+
             });
             </script>
 
