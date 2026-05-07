@@ -1,7 +1,8 @@
 <?php
+use App\Models\UsuarioModel;
+
 session_start();
 include "../../config/conection.php";
-require_once "Model.php";
 $con = conection();
 
 $idLogeado  = (int)($_SESSION['idUsuario'] ?? 0);

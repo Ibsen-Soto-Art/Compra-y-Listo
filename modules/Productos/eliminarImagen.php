@@ -1,17 +1,9 @@
 <?php
-include "../../config/conection.php";
-require_once "Model.php";
-$con = conection();
-
-$id = (int)($_POST['id'] ?? 0);
-if (!$id) { echo "error"; exit; }
-
-$img = ProductoModel::getImagenPorId($con, $id);
-if ($img) {
-    $raiz          = realpath(__DIR__ . '/../../') . '/';
-    $archivoFisico = ProductoModel::rutaFisica($img['rutaImagen'], $raiz);
-    if (file_exists($archivoFisico)) unlink($archivoFisico);
-}
-
-ProductoModel::eliminarImagen($con, $id);
-echo "ok";
+// MIGRADO → ProductoController::eliminarImagen()
+// Este stub redirige al front controller para mantener compatibilidad.
+define('ROOT_PATH', realpath(__DIR__ . '/../../'));
+define('APP_PATH',  ROOT_PATH . '/app');
+require ROOT_PATH . '/config/config.php';
+require ROOT_PATH . '/vendor/autoload.php';
+$_SERVER['REQUEST_URI'] = rtrim(parse_url(SITE_URL, PHP_URL_PATH), '/') . '/api/productos/eliminar-imagen';
+require ROOT_PATH . '/public/index.php';

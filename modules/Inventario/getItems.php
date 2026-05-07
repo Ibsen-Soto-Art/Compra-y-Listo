@@ -1,8 +1,9 @@
 <?php
+use App\Models\InventarioModel;
+
 session_start();
 header('Content-Type: application/json');
 include "../../config/conection.php";
-require_once "Model.php";
 $con = conection();
 
 if (!isset($_SESSION['usuarios'])) { echo json_encode([]); exit; }

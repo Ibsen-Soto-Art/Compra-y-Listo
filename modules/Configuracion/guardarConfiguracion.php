@@ -1,8 +1,9 @@
 <?php
+use App\Models\ConfiguracionModel;
+
 session_start();
 header('Content-Type: application/json');
 include "../../config/conection.php";
-require_once "Model.php";
 $con = conection();
 
 if (!isset($_SESSION['idUsuario'])) {

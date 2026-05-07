@@ -5,9 +5,21 @@
 # ── Configuración de Rutas ──────────────────────────────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /
-    RewriteRule ^config/  - [F,L]
-    RewriteRule ^vendor/  - [F,L]
+    RewriteBase /compraylisto/
+
+    # Bloquear acceso directo a carpetas sensibles
+    RewriteRule ^config/   - [F,L]
+    RewriteRule ^vendor/   - [F,L]
+    RewriteRule ^app/      - [F,L]
+
+    # Dejar pasar archivos y carpetas que existen fisicamente
+    # (assets, uploads, modules AJAX, auth, etc.)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Todo lo demás va al front controller
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
 </IfModule>
 
 # ── Bloquear archivos sensibles ───────────────────────────────

@@ -1,8 +1,9 @@
 <?php
+use App\Models\UsuarioModel;
+
 session_start();
 header('Content-Type: application/json');
 include "../../config/conection.php";
-require_once "Model.php";
 $con = conection();
 
 // Solo admins pueden crear usuarios
