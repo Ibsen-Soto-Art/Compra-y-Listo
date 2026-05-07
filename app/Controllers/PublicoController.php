@@ -15,4 +15,8 @@ class PublicoController extends Controller {
         http_response_code(204);
         exit;
     }
+
+    public function obtenerProducto(): void {
+        require ROOT_PATH . '/public/obtenerProductoPublico.php';
+    }
 }

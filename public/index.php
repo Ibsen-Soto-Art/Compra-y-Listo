@@ -37,8 +37,9 @@ $router = new Router();
 $router->get('/favicon.ico', [PublicoController::class, 'favicon']);
 
 // Páginas públicas
-$router->get('/',       [PublicoController::class, 'index']);
-$router->get('/index',  [PublicoController::class, 'index']);
+$router->get('/',                        [PublicoController::class, 'index']);
+$router->get('/index',                   [PublicoController::class, 'index']);
+$router->get('/api/producto-publico',    [PublicoController::class, 'obtenerProducto']);
 
 // Panel de administración
 $router->get('/admin',           [AdminController::class, 'dashboard']);

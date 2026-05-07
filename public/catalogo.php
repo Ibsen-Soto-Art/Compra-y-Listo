@@ -2032,7 +2032,7 @@ window.addEventListener("click", e => {
 })();
 
 function verProducto(id){
-    fetch(`<?= SITE_URL ?>/obtenerProductoPublico.php?id=${id}`)
+    fetch(`<?= SITE_URL ?>/api/producto-publico?id=${id}`)
     .then(r => r.json())
     .then(data => {
         if(data.error) return;
