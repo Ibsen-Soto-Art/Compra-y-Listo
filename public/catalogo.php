@@ -601,7 +601,7 @@ if(!$esBot){
 
         <!-- Logo + tagline -->
         <div class="imglogo">
-            <a href="index.php" class="imglogo">
+            <a href="<?= SITE_URL ?>/" class="imglogo">
                 <img class="imagenlogo"
                      src="../assets/imagenes/logo.png"
                      alt="Logo Compra y Listo">
@@ -831,7 +831,7 @@ if(!$esBot){
             </div>
 
             <!-- Barra de búsqueda -->
-            <form class="pub-search-bar" method="GET" action="index.php">
+            <form class="pub-search-bar" method="GET" action="<?= SITE_URL ?>/">
                 <div class="pub-search-inner">
                     <i class="bi bi-search"></i>
                     <input type="search" name="q"
@@ -848,7 +848,7 @@ if(!$esBot){
             <?php if(!empty($busqueda)): ?>
             <div class="pub-search-resultado">
                 Resultados para: <strong>"<?php echo htmlspecialchars($busqueda); ?>"</strong>
-                <a href="index.php"><i class="bi bi-x-circle-fill"></i> Limpiar</a>
+                <a href="<?= SITE_URL ?>/"><i class="bi bi-x-circle-fill"></i> Limpiar</a>
             </div>
             <?php endif; ?>
 
@@ -1159,7 +1159,7 @@ if(!$esBot){
             <i class="bi bi-search"></i>
             <p>No se encontraron productos<?php echo !empty($busqueda) ? ' para "'.htmlspecialchars($busqueda).'"' : ''; ?>.</p>
             <?php if(!empty($busqueda)): ?>
-            <a href="index.php">Ver todos los productos</a>
+            <a href="<?= SITE_URL ?>/">Ver todos los productos</a>
             <?php endif; ?>
         </div>
         <?php else: ?>
@@ -1594,7 +1594,7 @@ if(!$esBot){
         btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Ingresando...';
         msg.innerHTML = "";
 
-        fetch("../auth/loginAjax.php", { method:"POST", body: new FormData(this) })
+        fetch("<?= SITE_URL ?>/auth/loginAjax.php", { method:"POST", body: new FormData(this) })
         .then(r => r.json())
         .then(data => {
             if(data.status === "success"){
@@ -1623,7 +1623,7 @@ if(!$esBot){
         btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Enviando...';
         msg.innerHTML = "";
 
-        fetch("../auth/enviarCodigoReset.php", { method:"POST", body: new FormData(this) })
+        fetch("<?= SITE_URL ?>/auth/enviarCodigoReset.php", { method:"POST", body: new FormData(this) })
         .then(r => r.json())
         .then(data => {
             btn.disabled = false;
@@ -1681,7 +1681,7 @@ if(!$esBot){
         const fd = new FormData();
         fd.append("codigo", codigo);
 
-        fetch("../auth/verificarCodigoReset.php", { method:"POST", body: fd })
+        fetch("<?= SITE_URL ?>/auth/verificarCodigoReset.php", { method:"POST", body: fd })
         .then(r => r.json())
         .then(data => {
             btnVerif.disabled = false;
@@ -1761,7 +1761,7 @@ if(!$esBot){
         btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Guardando...';
         msg.innerHTML = "";
 
-        fetch("../auth/cambiarPasswordReset.php", { method:"POST", body: new FormData(this) })
+        fetch("<?= SITE_URL ?>/auth/cambiarPasswordReset.php", { method:"POST", body: new FormData(this) })
         .then(r => r.json())
         .then(data => {
             btn.disabled = false;
@@ -2032,7 +2032,7 @@ window.addEventListener("click", e => {
 })();
 
 function verProducto(id){
-    fetch(`obtenerProductoPublico.php?id=${id}`)
+    fetch(`<?= SITE_URL ?>/obtenerProductoPublico.php?id=${id}`)
     .then(r => r.json())
     .then(data => {
         if(data.error) return;

@@ -7,7 +7,7 @@
     $con = conection();
 
     if(!isset($_SESSION['idUsuario'])){
-        header("location:../auth/login.php");
+        header("location:" . SITE_URL . "/auth/login.php");
         exit();
     }
 
@@ -181,7 +181,7 @@
                     </div>
                 </div>
                 <div class="dropdown-menu" id="dropdown">
-                    <a href="../auth/logout.php">
+                    <a href="<?= SITE_URL ?>/auth/logout.php">
                         <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                     </a>
                 </div>
@@ -219,7 +219,7 @@
             </div>
         </div>
 
-        <a href="../auth/logout.php" class="btn-logout-head">
+        <a href="<?= SITE_URL ?>/auth/logout.php" class="btn-logout-head">
             <i class="bi bi-box-arrow-right"></i>
             <span>Cerrar sesión</span>
         </a>

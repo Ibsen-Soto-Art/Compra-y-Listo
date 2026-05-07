@@ -469,7 +469,7 @@ ob_start();
             <!-- Logo que se envuentra en el Head -->
             <div class="imglogo" >
 
-                <a href="../../public/dashboardAdmin.php" class="imglogo">
+                <a href="<?= SITE_URL ?>/admin" class="imglogo">
                     <img class="imagenlogo" 
                         src="../../assets/imagenes/logo.png" 
                         alt="Imagen del logo de la Empresa">
@@ -502,7 +502,7 @@ ob_start();
                         </div>
 
                         <div class="dropdown-menu" id="dropdown">
-                            <a href="../../auth/logout.php">
+                            <a href="<?= SITE_URL ?>/auth/logout.php">
                                 <i class="bi bi-box-arrow-left"></i> Cerrar sesión
                             </a>
                         </div>
@@ -513,7 +513,7 @@ ob_start();
             <!-- Menu de la pagina -->
          <div class="main" id="menuPrincipal">
                 <div class="orgmain">
-                    <a href="../Usuario/FormularioUser.php"  class="menu-card">
+                    <a href="<?= SITE_URL ?>/admin/usuarios"  class="menu-card">
                         <div class="icon"><i class="bi bi-person-gear"></i></div>
                         <h3>Usuarios</h3>
                         <p>Gestión de usuarios del sistema</p>
@@ -521,7 +521,7 @@ ob_start();
                 </div>
 
                 <div class="orgmain">
-                    <a href="../Categoria/FormularioCat.php" class="menu-card">
+                    <a href="<?= SITE_URL ?>/admin/categorias" class="menu-card">
                         <div class="icon"><i class="bi bi-bookmark-plus"></i></div>
                         <h3>Categorías</h3>
                         <p>Administrar categorías de productos</p>
@@ -529,7 +529,7 @@ ob_start();
                 </div>
 
                 <div class="orgmain">
-                    <a href="\../Subcategoria/GestorSubcategoria.php" class="menu-card">
+                    <a href="<?= SITE_URL ?>/admin/subcategorias" class="menu-card">
                         <div class="icon"><i class="bi bi-diagram-3-fill"></i></div>
                         <h3>Subcategorías</h3>
                         <p>Gestionar subcategorías de productos</p>
@@ -546,7 +546,7 @@ ob_start();
             
              </div>
 
-            <a href="../../auth/logout.php" class="btn-logout-head">
+            <a href="<?= SITE_URL ?>/auth/logout.php" class="btn-logout-head">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Cerrar sesión</span>
             </a>
@@ -570,7 +570,7 @@ ob_start();
             <!-- RUTA -->
              
             <div class="ruta">
-                <a href="../../public/dashboardAdmin.php">Página Principal</a>
+                <a href="<?= SITE_URL ?>/admin">Página Principal</a>
                 <span class="separator"><i class="bi bi-chevron-right separator"></i></span>
                 <span class="actual">Producto</span>
             </div>
@@ -628,12 +628,12 @@ ob_start();
                             <span>Importar Productos</span>
                         </a>
 
-                        <a href="generarPlantillaProductos.php" class="accion">
+                        <a href="<?= SITE_URL ?>/api/productos/plantilla" class="accion">
                             <i class="bi bi-file-earmark-excel-fill"></i>
                             <span>Descargar Plantilla</span>
                         </a>
 
-                        <a href="exportarExcel.php" class="accion">
+                        <a href="<?= SITE_URL ?>/api/productos/exportar" class="accion">
                             <i class="bi bi-file-earmark-arrow-down-fill"></i>
                             <span>Exportar</span>
                         </a>
@@ -704,7 +704,7 @@ ob_start();
                                 </span>
                             </label>
 
-                            <a href="generarPlantillaProductos.php" class="modal-import-plantilla">
+                            <a href="<?= SITE_URL ?>/api/productos/plantilla" class="modal-import-plantilla">
                                 <i class="bi bi-download"></i> Descargar plantilla de ejemplo
                             </a>
 
