@@ -173,19 +173,24 @@ if(!$esBot){
     .card-pub .card-wa-btn:hover {
         background: #1ebe5c !important;
     }
-    .card-oferta-badge-pub {
-        position: absolute !important;
-        top: 10px !important;
-        right: 10px !important;
-        background: linear-gradient(135deg,#f97316,#dc2626) !important;
-        color: #fff !important;
-        font-size: 10px !important;
-        font-weight: 800 !important;
-        padding: 4px 9px !important;
+    /* ocultar badge overlay original */
+    .card-oferta-badge-pub { display: none !important; }
+
+    /* tag de oferta en el área de info */
+    .card-oferta-tag {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        background: #fff3e0 !important;
+        color: #c2410c !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        padding: 3px 10px !important;
         border-radius: 20px !important;
-        letter-spacing: .4px !important;
+        border: 1px solid #fed7aa !important;
+        letter-spacing: .3px !important;
         text-transform: uppercase !important;
-        z-index: 5 !important;
+        width: fit-content !important;
     }
 
     @media (max-width: 900px) {
@@ -1408,12 +1413,6 @@ if(!$esBot){
                             <?php echo $prod['disponibles'] > 0 ? 'Disponible' : 'Agotado'; ?>
                         </span>
 
-                        <?php if($prod['enOferta'] && $prod['descuento'] > 0): ?>
-                        <span class="card-oferta-badge-pub">
-                            <i class="bi bi-tag-fill"></i> -<?php echo intval($prod['descuento']); ?>% OFERTA
-                        </span>
-                        <?php endif; ?>
-
                         <?php if($totalImg > 1): ?>
                         <span class="card-img-count">
                             <i class="bi bi-images"></i> <?php echo $totalImg; ?>
@@ -1423,6 +1422,11 @@ if(!$esBot){
 
                     <!-- Info -->
                     <div class="card-info">
+                        <?php if($prod['enOferta'] && $prod['descuento'] > 0): ?>
+                        <span class="card-oferta-tag">
+                            <i class="bi bi-tag-fill"></i> -<?php echo intval($prod['descuento']); ?>% OFERTA
+                        </span>
+                        <?php endif; ?>
                         <h4 class="card-nombre"><?php echo htmlspecialchars($prod['nombre']); ?></h4>
                         <?php if($prod['enOferta'] && $prod['descuento'] > 0):
                             $precioFinal = $prod['precio'] * (1 - $prod['descuento'] / 100);
