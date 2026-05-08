@@ -173,8 +173,17 @@ if(!$esBot){
     .card-pub .card-wa-btn:hover {
         background: #1ebe5c !important;
     }
-    /* ocultar badge overlay original */
-    .card-oferta-badge-pub { display: none !important; }
+    /* ocultar badge overlay del slider — todas las formas posibles */
+    .card-oferta-badge-pub,
+    span.card-oferta-badge-pub,
+    .card-pub .card-oferta-badge-pub,
+    .card-producto .card-oferta-badge-pub,
+    .slider-producto .card-oferta-badge-pub {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
 
     /* tag de oferta en el área de info */
     .card-oferta-tag {
@@ -1940,6 +1949,11 @@ if(!$esBot){
         });
     });
 })();
+</script>
+
+<!-- Eliminar badge oferta del slider si quedó por caché -->
+<script>
+document.querySelectorAll(".card-oferta-badge-pub").forEach(el => el.remove());
 </script>
 
 <!-- Slider de imágenes al hover -->
