@@ -5,11 +5,8 @@
 # ── Configuración de Rutas ──────────────────────────────────
 <IfModule mod_rewrite.c>
     RewriteEngine On
-
-    # LOCAL (XAMPP): RewriteBase /compraylisto/
-    # PRODUCCION:    RewriteBase /
-    # Cambia la línea de abajo según el entorno donde estés subiendo.
-    RewriteBase /compraylisto/
+    # RewriteBase se omite intencionalmente: Apache usa automáticamente
+    # la carpeta del .htaccess como base (local: /compraylisto/, prod: /)
 
     # Bloquear acceso directo a carpetas sensibles
     RewriteRule ^config/   - [F,L]
