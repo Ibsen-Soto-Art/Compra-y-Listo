@@ -9,7 +9,7 @@
     # LOCAL (XAMPP): RewriteBase /compraylisto/
     # PRODUCCION:    RewriteBase /
     # Cambia la línea de abajo según el entorno donde estés subiendo.
-    RewriteBase /
+    RewriteBase /compraylisto/
 
     # Bloquear acceso directo a carpetas sensibles
     RewriteRule ^config/   - [F,L]

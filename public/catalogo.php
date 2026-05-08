@@ -15,33 +15,207 @@ $busqueda = isset($_GET['q']) ? mysqli_real_escape_string($con, trim($_GET['q'])
 
 /* ── Registro de visita ─────────────────────────────────────
    Solo crea la tabla la primera vez (guarda flag en sesión).
+   Envuelto en try/catch: es analítica no crítica; si la
+   conexión se pierde, reconectamos antes de los queries
+   principales del catálogo.
 ──────────────────────────────────────────────────────────── */
 if(session_status() === PHP_SESSION_NONE) session_start();
-if(empty($_SESSION['visitas_table_ok'])){
-    mysqli_query($con, "CREATE TABLE IF NOT EXISTS visitas (
-        id          INT AUTO_INCREMENT PRIMARY KEY,
-        fecha       DATE        NOT NULL,
-        hora        TINYINT     NOT NULL,
-        ip_hash     VARCHAR(64) NOT NULL,
-        INDEX idx_fecha   (fecha),
-        INDEX idx_iphash  (ip_hash)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    $_SESSION['visitas_table_ok'] = 1;
-}
 
 $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
 $bots = ['bot','crawl','spider','slurp','mediapartners','facebookexternalhit','curl','wget','python','java'];
 $esBot = false;
 foreach($bots as $b){ if(stripos($ua, $b) !== false){ $esBot = true; break; } }
 
-if(!$esBot){
-    $ip      = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-    $ipHash  = hash('sha256', $ip . date('Y-m-d'));   // hash diario: mismo visitante = mismo hash ese día
-    $fecha   = date('Y-m-d');
-    $hora    = (int)date('G');
-    mysqli_query($con,
-        "INSERT INTO visitas (fecha, hora, ip_hash) VALUES ('$fecha', $hora, '$ipHash')");
+try {
+    if(empty($_SESSION['visitas_table_ok'])){
+        mysqli_query($con, "CREATE TABLE IF NOT EXISTS visitas (
+            id          INT AUTO_INCREMENT PRIMARY KEY,
+            fecha       DATE        NOT NULL,
+            hora        TINYINT     NOT NULL,
+            ip_hash     VARCHAR(64) NOT NULL,
+            INDEX idx_fecha   (fecha),
+            INDEX idx_iphash  (ip_hash)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $_SESSION['visitas_table_ok'] = 1;
+    }
+    if(!$esBot){
+        $ip     = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $ipHash = hash('sha256', $ip . date('Y-m-d'));
+        $fecha  = date('Y-m-d');
+        $hora   = (int)date('G');
+        mysqli_query($con,
+            "INSERT INTO visitas (fecha, hora, ip_hash) VALUES ('$fecha', $hora, '$ipHash')");
+    }
+} catch (\Exception $e) {
+    /* La conexión se perdió durante el tracking de visitas.
+       Reconectamos para que el catálogo cargue normalmente. */
+    @mysqli_close($con);
+    $con = conection();
 }
+
+/* ══════════════════════════════════════════════════════════
+   TODOS LOS QUERIES — antes de cualquier HTML
+   Evita "MySQL server has gone away" por timeout en el medio
+   del renderizado HTML.
+══════════════════════════════════════════════════════════ */
+
+/* Hero stats */
+$totalProd = (int)(mysqli_fetch_row(mysqli_query($con,
+    "SELECT COUNT(DISTINCT p.idProducto) FROM producto p
+     LEFT JOIN categoria pc ON pc.idCategoria=p.idCategoria
+     INNER JOIN iteminventario inv ON inv.idProducto=p.idProducto
+     WHERE inv.estadoItem='Disponible'
+       AND (p.idCategoria IS NULL OR pc.estadoCategoria='Activo')"))[0] ?? 0);
+$totalCat  = (int)(mysqli_fetch_row(mysqli_query($con,
+    "SELECT COUNT(*) FROM categoria WHERE estadoCategoria='Activo'"))[0] ?? 0);
+$totalVend = (int)(mysqli_fetch_row(mysqli_query($con,
+    "SELECT COUNT(*) FROM usuarios WHERE rol='gestor' OR rol='admin'"))[0] ?? 0);
+
+/* Filtros de categoría (chips) */
+$_sqlCatFiltro = "SELECT c.idCategoria, c.nombreCategoria, COUNT(DISTINCT p.idProducto) AS total
+                  FROM categoria c
+                  INNER JOIN producto p ON (
+                      p.idCategoria = c.idCategoria
+                      OR EXISTS (
+                          SELECT 1 FROM productosubcategoria ps
+                          INNER JOIN subcategoria s ON s.idSubcategoria = ps.idSubcategoria
+                          WHERE ps.idProducto = p.idProducto AND s.idCategoria = c.idCategoria
+                      )
+                  )
+                  WHERE c.estadoCategoria = 'Activo'
+                    AND EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
+                  GROUP BY c.idCategoria
+                  HAVING total > 0
+                  ORDER BY c.nombreCategoria";
+$_qCatFiltro = mysqli_query($con, $_sqlCatFiltro);
+$categoriasFiltro = [];
+while($_r = mysqli_fetch_assoc($_qCatFiltro)) $categoriasFiltro[] = $_r;
+
+$_qTotal = mysqli_query($con,
+    "SELECT COUNT(DISTINCT p.idProducto) FROM producto p
+     LEFT JOIN categoria pc ON pc.idCategoria=p.idCategoria
+     INNER JOIN iteminventario inv ON inv.idProducto=p.idProducto
+     WHERE inv.estadoItem='Disponible'
+       AND (p.idCategoria IS NULL OR pc.estadoCategoria='Activo')");
+$totalProductos = (int)(mysqli_fetch_row($_qTotal)[0] ?? 0);
+
+/* Nombres de productos por categoría (para dropdowns de chips) */
+$nomProductosPorCat = [];
+foreach($categoriasFiltro as $_cat){
+    $_idC = (int)$_cat['idCategoria'];
+    $_qP  = mysqli_query($con,
+        "SELECT DISTINCT p.nombreProducto FROM producto p
+         WHERE (p.idCategoria=$_idC
+                OR EXISTS (SELECT 1 FROM productosubcategoria ps
+                           INNER JOIN subcategoria s ON s.idSubcategoria=ps.idSubcategoria
+                           WHERE ps.idProducto=p.idProducto AND s.idCategoria=$_idC))
+           AND EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
+         ORDER BY p.nombreProducto");
+    $nomProductosPorCat[$_idC] = [];
+    while($_p = mysqli_fetch_assoc($_qP)) $nomProductosPorCat[$_idC][] = $_p['nombreProducto'];
+}
+
+/* Detectar tabla municipio */
+$_tblMun = mysqli_fetch_assoc(mysqli_query($con,
+    "SELECT COUNT(*) AS c FROM INFORMATION_SCHEMA.TABLES
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'municipio'"));
+$conMunicipio = (int)($_tblMun['c'] ?? 0) > 0;
+
+/* Grid de productos */
+if($conMunicipio){
+    $_sqlGrid = "SELECT p.idProducto, p.nombreProducto, p.precio, p.enOferta, p.descuento,
+                        COALESCE(c.idCategoria, pc.idCategoria, 0) AS idCat,
+                        COALESCE(c.nombreCategoria, pc.nombreCategoria, 'Sin categoría') AS nombreCategoria,
+                        i.rutaImagen, i.esPrincipal,
+                        (SELECT COUNT(*) FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible') AS disponibles,
+                        (SELECT GROUP_CONCAT(DISTINCT ps2.idSubcategoria)
+                         FROM productosubcategoria ps2
+                         INNER JOIN subcategoria s2 ON s2.idSubcategoria=ps2.idSubcategoria
+                         WHERE ps2.idProducto=p.idProducto AND s2.estadoSubcategoria='Activo') AS subcatIds,
+                        CASE WHEN mun.idMunicipio IS NOT NULL THEN CONCAT(mun.nombre,', ',dep.nombre)
+                             ELSE COALESCE(p.ubicacion,'') END AS ubicacion,
+                        COALESCE(mun.idMunicipio,0) AS idMun,
+                        COALESCE(dep.nombre,'') AS nombreDepto
+                 FROM producto p
+                 LEFT JOIN imagenesproducto i ON p.idProducto=i.idProducto
+                 LEFT JOIN productosubcategoria ps ON ps.idProducto=p.idProducto
+                 LEFT JOIN subcategoria s ON s.idSubcategoria=ps.idSubcategoria
+                 LEFT JOIN categoria c ON c.idCategoria=s.idCategoria
+                 LEFT JOIN categoria pc ON pc.idCategoria=p.idCategoria
+                 LEFT JOIN municipio mun ON mun.idMunicipio=p.idMunicipio
+                 LEFT JOIN departamento dep ON dep.idDepartamento=mun.idDepartamento
+                 WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
+                   AND (p.idCategoria IS NULL OR pc.estadoCategoria='Activo')";
+} else {
+    $_sqlGrid = "SELECT p.idProducto, p.nombreProducto, p.precio, p.enOferta, p.descuento,
+                        COALESCE(c.idCategoria, pc.idCategoria, 0) AS idCat,
+                        COALESCE(c.nombreCategoria, pc.nombreCategoria, 'Sin categoría') AS nombreCategoria,
+                        i.rutaImagen, i.esPrincipal,
+                        (SELECT COUNT(*) FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible') AS disponibles,
+                        (SELECT GROUP_CONCAT(DISTINCT ps2.idSubcategoria)
+                         FROM productosubcategoria ps2
+                         INNER JOIN subcategoria s2 ON s2.idSubcategoria=ps2.idSubcategoria
+                         WHERE ps2.idProducto=p.idProducto AND s2.estadoSubcategoria='Activo') AS subcatIds,
+                        COALESCE(p.ubicacion,'') AS ubicacion,
+                        0 AS idMun, '' AS nombreDepto
+                 FROM producto p
+                 LEFT JOIN imagenesproducto i ON p.idProducto=i.idProducto
+                 LEFT JOIN productosubcategoria ps ON ps.idProducto=p.idProducto
+                 LEFT JOIN subcategoria s ON s.idSubcategoria=ps.idSubcategoria
+                 LEFT JOIN categoria c ON c.idCategoria=s.idCategoria
+                 LEFT JOIN categoria pc ON pc.idCategoria=p.idCategoria
+                 WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
+                   AND (p.idCategoria IS NULL OR pc.estadoCategoria='Activo')";
+}
+if(!empty($busqueda)){
+    $_sqlGrid .= " AND (p.nombreProducto LIKE '%$busqueda%' OR c.nombreCategoria LIKE '%$busqueda%')";
+}
+$_sqlGrid .= " ORDER BY p.idProducto DESC, i.orden ASC";
+
+$_qGrid = mysqli_query($con, $_sqlGrid);
+$productosPorCategoria = [];
+while($_row = mysqli_fetch_assoc($_qGrid)){
+    $_catId = $_row['idCat'] ?? 0;
+    $_id    = $_row['idProducto'];
+    if(!isset($productosPorCategoria[$_catId][$_id])){
+        $productosPorCategoria[$_catId][$_id] = [
+            'nombre'      => $_row['nombreProducto'],
+            'precio'      => $_row['precio'],
+            'ubicacion'   => $_row['ubicacion'],
+            'idMun'       => (int)($_row['idMun'] ?? 0),
+            'nombreDepto' => $_row['nombreDepto'] ?? '',
+            'disponibles' => (int)$_row['disponibles'],
+            'enOferta'    => (int)$_row['enOferta'],
+            'descuento'   => (float)$_row['descuento'],
+            'subcatIds'   => $_row['subcatIds'] ?? '',
+            'imagenes'    => [],
+        ];
+    }
+    if($_row['rutaImagen'] && !in_array($_row['rutaImagen'], $productosPorCategoria[$_catId][$_id]['imagenes'])){
+        $productosPorCategoria[$_catId][$_id]['imagenes'][] = $_row['rutaImagen'];
+    }
+}
+
+/* Cabeceras del grid (con búsqueda opcional) */
+$_sqlCat2 = "SELECT c.idCategoria, c.nombreCategoria, COUNT(DISTINCT p.idProducto) AS total
+             FROM categoria c
+             INNER JOIN producto p ON (
+                 p.idCategoria = c.idCategoria
+                 OR EXISTS (SELECT 1 FROM productosubcategoria ps
+                            INNER JOIN subcategoria s ON s.idSubcategoria=ps.idSubcategoria
+                            WHERE ps.idProducto=p.idProducto AND s.idCategoria=c.idCategoria)
+             )
+             WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')";
+if(!empty($busqueda)){
+    $_sqlCat2 .= " AND (p.nombreProducto LIKE '%$busqueda%' OR c.nombreCategoria LIKE '%$busqueda%')";
+}
+$_sqlCat2 .= " GROUP BY c.idCategoria HAVING total > 0";
+$_qCat2 = mysqli_query($con, $_sqlCat2);
+$categoriasGrid = [];
+while($_r2 = mysqli_fetch_assoc($_qCat2)) $categoriasGrid[] = $_r2;
+
+/* Cerrar conexión — ya no se necesita */
+mysqli_close($con);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -55,13 +229,13 @@ if(!$esBot){
     <!-- Preconnect CDN fonts -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <!-- Preload CSS crítico -->
-    <link rel="preload" href="../assets/styleAll.min.css" as="style">
-    <link rel="preload" href="../assets/mobile.min.css" as="style">
-    <link rel="stylesheet" href="../assets/styleAll.min.css">
-    <link rel="stylesheet" href="../assets/mobile.min.css">
+    <link rel="preload" href="<?= SITE_URL ?>/assets/styleAll.min.css" as="style">
+    <link rel="preload" href="<?= SITE_URL ?>/assets/mobile.min.css" as="style">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/styleAll.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/mobile.min.css">
     <!-- Bootstrap Icons: carga diferida sin bloquear render -->
-    <link rel="stylesheet" href="../assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="../assets/bootstrap-icons/bootstrap-icons.css"></noscript>
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css"></noscript>
     <style>
     /* ══ GRID DE PRODUCTOS — CATÁLOGO PÚBLICO ════════════════ */
     .ProductGeneral {
@@ -773,7 +947,7 @@ if(!$esBot){
         <div class="imglogo">
             <a href="<?= SITE_URL ?>/" class="imglogo">
                 <img class="imagenlogo"
-                     src="../assets/imagenes/logo.png"
+                     src="<?= SITE_URL ?>/assets/imagenes/logo.png"
                      alt="Logo Compra y Listo">
             </a>
 
@@ -980,11 +1154,6 @@ if(!$esBot){
     </div>
 
     <!-- ══ HERO ════════════════════════════════════════════════ -->
-    <?php
-        $totalProd = mysqli_fetch_row(mysqli_query($con,"SELECT COUNT(DISTINCT p.idProducto) FROM producto p LEFT JOIN categoria pc ON pc.idCategoria=p.idCategoria INNER JOIN iteminventario inv ON inv.idProducto=p.idProducto WHERE inv.estadoItem='Disponible' AND (p.idCategoria IS NULL OR pc.estadoCategoria='Activo')"))[0];
-        $totalCat  = mysqli_fetch_row(mysqli_query($con,"SELECT COUNT(*) FROM categoria WHERE estadoCategoria='Activo'"))[0];
-        $totalVend = mysqli_fetch_row(mysqli_query($con,"SELECT COUNT(*) FROM usuarios WHERE rol='gestor' OR rol='admin'"))[0];
-    ?>
     <div class="pub-hero">
         <!-- Blobs decorativos -->
         <div class="pub-hero-blob pub-hero-blob1"></div>
@@ -1047,33 +1216,6 @@ if(!$esBot){
     <div class="cuepo">
 
         <!-- ── FILTROS DE CATEGORÍA ─────────────────────────── -->
-        <?php
-        $sqlCat = "SELECT c.idCategoria, c.nombreCategoria, COUNT(DISTINCT p.idProducto) AS total
-                   FROM categoria c
-                   INNER JOIN producto p ON (
-                       p.idCategoria = c.idCategoria
-                       OR EXISTS (
-                           SELECT 1 FROM productosubcategoria ps
-                           INNER JOIN subcategoria s ON s.idSubcategoria = ps.idSubcategoria
-                           WHERE ps.idProducto = p.idProducto AND s.idCategoria = c.idCategoria
-                       )
-                   )
-                   WHERE c.estadoCategoria = 'Activo'
-                     AND EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
-                   GROUP BY c.idCategoria
-                   HAVING total > 0
-                   ORDER BY c.nombreCategoria";
-        $queryCat = mysqli_query($con, $sqlCat);
-        $categoriasFiltro = [];
-        while($cat = mysqli_fetch_assoc($queryCat)) $categoriasFiltro[] = $cat;
-
-        $qTotal = mysqli_query($con,"SELECT COUNT(DISTINCT p.idProducto) FROM producto p LEFT JOIN categoria pc ON pc.idCategoria=p.idCategoria INNER JOIN iteminventario inv ON inv.idProducto=p.idProducto WHERE inv.estadoItem='Disponible' AND (p.idCategoria IS NULL OR pc.estadoCategoria='Activo')");
-        $totalProductos = 0;
-        if($qTotal){
-            $rowTotal = mysqli_fetch_row($qTotal);
-            $totalProductos = $rowTotal[0] ?? 0;
-        }
-        ?>
 
         <div class="filtro-barra">
             <div class="filtro-scroll" id="filtroScroll">
@@ -1102,17 +1244,13 @@ if(!$esBot){
                             <i class="bi bi-bookmark-fill"></i>
                             <?php echo htmlspecialchars($cat['nombreCategoria']); ?>
                         </p>
-                        <?php
-                        $idCat = intval($cat['idCategoria']);
-                        $qProd = mysqli_query($con, "SELECT DISTINCT p.nombreProducto FROM producto p WHERE (p.idCategoria=$idCat OR EXISTS (SELECT 1 FROM productosubcategoria ps INNER JOIN subcategoria s ON s.idSubcategoria=ps.idSubcategoria WHERE ps.idProducto=p.idProducto AND s.idCategoria=$idCat)) AND EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible') ORDER BY p.nombreProducto");
-                        while($prod = mysqli_fetch_assoc($qProd)):
-                        ?>
+                        <?php foreach($nomProductosPorCat[(int)$cat['idCategoria']] ?? [] as $_pnom): ?>
                         <div class="nameProduct filtro-dropdown-item"
-                             data-nombre="<?php echo strtolower(htmlspecialchars($prod['nombreProducto'])); ?>">
+                             data-nombre="<?php echo strtolower(htmlspecialchars($_pnom)); ?>">
                             <i class="bi bi-dot"></i>
-                            <?php echo htmlspecialchars($prod['nombreProducto']); ?>
+                            <?php echo htmlspecialchars($_pnom); ?>
                         </div>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     </div>
 
                 </div>
@@ -1230,100 +1368,6 @@ if(!$esBot){
         </div>
 
         <!-- ── GRID DE PRODUCTOS ─────────────────────────────── -->
-        <?php
-        // Detectar si ya existe la tabla municipio (post-migración)
-        $tblMun = mysqli_fetch_assoc(mysqli_query($con,
-            "SELECT COUNT(*) AS c FROM INFORMATION_SCHEMA.TABLES
-             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'municipio'"));
-        $conMunicipio = (int)$tblMun['c'] > 0;
-
-        if($conMunicipio){
-            $sql = "SELECT
-                        p.idProducto,
-                        p.nombreProducto,
-                        p.precio,
-                        p.enOferta,
-                        p.descuento,
-                        COALESCE(c.idCategoria, pc.idCategoria, 0) AS idCat,
-                        COALESCE(c.nombreCategoria, pc.nombreCategoria, 'Sin categoría') AS nombreCategoria,
-                        i.rutaImagen,
-                        i.esPrincipal,
-                        (SELECT COUNT(*) FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible') AS disponibles,
-                        (SELECT GROUP_CONCAT(DISTINCT ps2.idSubcategoria) FROM productosubcategoria ps2 INNER JOIN subcategoria s2 ON s2.idSubcategoria = ps2.idSubcategoria WHERE ps2.idProducto = p.idProducto AND s2.estadoSubcategoria = 'Activo') AS subcatIds,
-                        CASE
-                            WHEN mun.idMunicipio IS NOT NULL THEN CONCAT(mun.nombre, ', ', dep.nombre)
-                            ELSE COALESCE(p.ubicacion, '')
-                        END AS ubicacion,
-                        COALESCE(mun.idMunicipio, 0) AS idMun,
-                        COALESCE(dep.nombre, '') AS nombreDepto
-                    FROM producto p
-                    LEFT JOIN imagenesproducto i ON p.idProducto = i.idProducto
-                    LEFT JOIN productosubcategoria ps ON ps.idProducto = p.idProducto
-                    LEFT JOIN subcategoria s ON s.idSubcategoria = ps.idSubcategoria
-                    LEFT JOIN categoria c ON c.idCategoria = s.idCategoria
-                    LEFT JOIN categoria pc ON pc.idCategoria = p.idCategoria
-                    LEFT JOIN municipio   mun ON mun.idMunicipio   = p.idMunicipio
-                    LEFT JOIN departamento dep ON dep.idDepartamento = mun.idDepartamento
-                    WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
-                      AND (p.idCategoria IS NULL OR pc.estadoCategoria = 'Activo')";
-        } else {
-            $sql = "SELECT
-                        p.idProducto,
-                        p.nombreProducto,
-                        p.precio,
-                        p.enOferta,
-                        p.descuento,
-                        COALESCE(c.idCategoria, pc.idCategoria, 0) AS idCat,
-                        COALESCE(c.nombreCategoria, pc.nombreCategoria, 'Sin categoría') AS nombreCategoria,
-                        i.rutaImagen,
-                        i.esPrincipal,
-                        (SELECT COUNT(*) FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible') AS disponibles,
-                        (SELECT GROUP_CONCAT(DISTINCT ps2.idSubcategoria) FROM productosubcategoria ps2 INNER JOIN subcategoria s2 ON s2.idSubcategoria = ps2.idSubcategoria WHERE ps2.idProducto = p.idProducto AND s2.estadoSubcategoria = 'Activo') AS subcatIds,
-                        COALESCE(p.ubicacion, '') AS ubicacion,
-                        0 AS idMun,
-                        '' AS nombreDepto
-                    FROM producto p
-                    LEFT JOIN imagenesproducto i ON p.idProducto = i.idProducto
-                    LEFT JOIN productosubcategoria ps ON ps.idProducto = p.idProducto
-                    LEFT JOIN subcategoria s ON s.idSubcategoria = ps.idSubcategoria
-                    LEFT JOIN categoria c ON c.idCategoria = s.idCategoria
-                    LEFT JOIN categoria pc ON pc.idCategoria = p.idCategoria
-                    WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
-                      AND (p.idCategoria IS NULL OR pc.estadoCategoria = 'Activo')";
-        }
-
-        if(!empty($busqueda)){
-            $sql .= " AND (p.nombreProducto LIKE '%$busqueda%'
-                         OR c.nombreCategoria LIKE '%$busqueda%')";
-        }
-        $sql .= " ORDER BY p.idProducto DESC, i.orden ASC";
-
-        $query = mysqli_query($con, $sql);
-        $productosPorCategoria = [];
-
-        while($row = mysqli_fetch_assoc($query)){
-            $catId = $row['idCat'] ?? 0;
-            $id    = $row['idProducto'];
-            if(!isset($productosPorCategoria[$catId][$id])){
-                $productosPorCategoria[$catId][$id] = [
-                    "nombre"      => $row['nombreProducto'],
-                    "precio"      => $row['precio'],
-                    "ubicacion"   => $row['ubicacion'],
-                    "idMun"       => (int)($row['idMun'] ?? 0),
-                    "nombreDepto" => $row['nombreDepto'] ?? "",
-                    "disponibles" => (int)$row['disponibles'],
-                    "enOferta"    => (int)$row['enOferta'],
-                    "descuento"   => (float)$row['descuento'],
-                    "subcatIds"   => $row['subcatIds'] ?? "",
-                    "imagenes"    => []
-                ];
-            }
-            if($row['rutaImagen'] && !in_array($row['rutaImagen'], $productosPorCategoria[$catId][$id]['imagenes'])){
-                $productosPorCategoria[$catId][$id]['imagenes'][] = $row['rutaImagen'];
-            }
-        }
-        ?>
-
         <?php if(empty($productosPorCategoria)): ?>
         <div class="pub-empty">
             <i class="bi bi-search"></i>
@@ -1335,39 +1379,7 @@ if(!$esBot){
         <?php else: ?>
 
         <div class="ProductGeneral">
-            <?php
-            $sqlCat2 = "SELECT c.idCategoria, c.nombreCategoria, COUNT(DISTINCT p.idProducto) AS total
-                        FROM categoria c
-                        INNER JOIN producto p ON (
-                            p.idCategoria = c.idCategoria
-                            OR EXISTS (
-                                SELECT 1 FROM productosubcategoria ps
-                                INNER JOIN subcategoria s ON s.idSubcategoria = ps.idSubcategoria
-                                WHERE ps.idProducto = p.idProducto AND s.idCategoria = c.idCategoria
-                            )
-                        )
-                        WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
-                        GROUP BY c.idCategoria
-                        HAVING total > 0";
-            if(!empty($busqueda)){
-                $sqlCat2 = "SELECT c.idCategoria, c.nombreCategoria, COUNT(DISTINCT p.idProducto) AS total
-                            FROM categoria c
-                            INNER JOIN producto p ON (
-                                p.idCategoria = c.idCategoria
-                                OR EXISTS (
-                                    SELECT 1 FROM productosubcategoria ps
-                                    INNER JOIN subcategoria s ON s.idSubcategoria = ps.idSubcategoria
-                                    WHERE ps.idProducto = p.idProducto AND s.idCategoria = c.idCategoria
-                                )
-                            )
-                            WHERE EXISTS (SELECT 1 FROM iteminventario WHERE idProducto=p.idProducto AND estadoItem='Disponible')
-                            AND (p.nombreProducto LIKE '%$busqueda%'
-                               OR c.nombreCategoria LIKE '%$busqueda%')
-                            GROUP BY c.idCategoria";
-            }
-            $queryCat2 = mysqli_query($con, $sqlCat2);
-
-            while($cat = mysqli_fetch_assoc($queryCat2)):
+            <?php foreach($categoriasGrid as $cat):
                 $idCat = $cat['idCategoria'];
                 if(!isset($productosPorCategoria[$idCat])) continue;
             ?>
@@ -1468,7 +1480,7 @@ if(!$esBot){
                 <?php endforeach; ?>
             </div>
 
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         </div>
 
         <?php endif; ?>
@@ -1627,7 +1639,7 @@ if(!$esBot){
         </button>
 
         <button class="mob-nav-item mob-nav-center" id="mobNavMascota" aria-label="Inicio">
-            <img src="../assets/imagenes/Mascota.png" alt="Mascota" class="mob-nav-mascota">
+            <img src="<?= SITE_URL ?>/assets/imagenes/Mascota.png" alt="Mascota" class="mob-nav-mascota">
         </button>
 
         <button class="mob-nav-item" id="mobNavBuscar" aria-label="Buscar">

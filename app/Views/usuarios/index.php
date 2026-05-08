@@ -2,7 +2,7 @@
 ob_start();
     /* Esto es para la conection */
    
-    session_start();
+if (session_status() === PHP_SESSION_NONE) session_start();
     $usuarioLogeado = $_SESSION['usuarios'];
     include(ROOT_PATH . "/config/conection.php");
     $con= conection();
@@ -23,13 +23,13 @@ ob_start();
     <meta name="Description" content="Página web diseñada para facilitar la compra y venta de productos nuevos y usados de manera rápida y sencilla.">
     <title>Compra y Listo</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preload" href="../../assets/styleAll.min.css" as="style">
-    <link rel="preload" href="../../assets/mobile-admin.min.css" as="style">
-    <link rel="stylesheet" href="../../assets/styleAll.min.css">
-    <link rel="stylesheet" href="../../assets/mobile-admin.min.css">
-    <link rel="stylesheet" href="../../assets/admin-overrides.css">
-    <link rel="stylesheet" href="../../assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="../../assets/bootstrap-icons/bootstrap-icons.css"></noscript>
+    <link rel="preload" href="<?= SITE_URL ?>/assets/styleAll.min.css" as="style">
+    <link rel="preload" href="<?= SITE_URL ?>/assets/mobile-admin.min.css" as="style">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/styleAll.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/mobile-admin.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/admin-overrides.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css"></noscript>
 </head>
 <body>
    <div class="contenedor">
@@ -42,7 +42,7 @@ ob_start();
 
                 <a href="<?= SITE_URL ?>/admin" class="imglogo">
                     <img class="imagenlogo" 
-                        src="../../assets/imagenes/logo.png" 
+                        src="<?= SITE_URL ?>/assets/imagenes/logo.png" 
                         alt="Imagen del logo de la Empresa">
                 </a>
 

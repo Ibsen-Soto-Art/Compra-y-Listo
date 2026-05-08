@@ -1,6 +1,6 @@
 ﻿<?php
 ob_start();
-    session_start();
+if (session_status() === PHP_SESSION_NONE) session_start();
     include(ROOT_PATH . "/config/conection.php");
     $con = conection();
 
@@ -19,13 +19,13 @@ ob_start();
     <meta name="Description" content="Página web diseñada para facilitar la compra y venta de productos nuevos y usados de manera rápida y sencilla.">
     <title>Compra y Listo</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preload" href="../../assets/styleAll.min.css" as="style">
-    <link rel="preload" href="../../assets/mobile-admin.min.css" as="style">
-    <link rel="stylesheet" href="../../assets/styleAll.min.css">
-    <link rel="stylesheet" href="../../assets/mobile-admin.min.css">
-    <link rel="stylesheet" href="../../assets/admin-overrides.css">
-    <link rel="stylesheet" href="../../assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="../../assets/bootstrap-icons/bootstrap-icons.css"></noscript>
+    <link rel="preload" href="<?= SITE_URL ?>/assets/styleAll.min.css" as="style">
+    <link rel="preload" href="<?= SITE_URL ?>/assets/mobile-admin.min.css" as="style">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/styleAll.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/mobile-admin.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/admin-overrides.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css"></noscript>
     <style>
         /* ── Stats bar ── */
         .cat-stats-bar {
@@ -259,7 +259,7 @@ ob_start();
         <div class="imglogo">
             <a href="<?= SITE_URL ?>/admin" class="imglogo">
                 <img class="imagenlogo"
-                    src="../../assets/imagenes/logo.png"
+                    src="<?= SITE_URL ?>/assets/imagenes/logo.png"
                     alt="Imagen del logo de la Empresa">
             </a>
 
@@ -1297,27 +1297,32 @@ ob_start();
     </div>
 
 </div>
-<script src="../../assets/toast.js"></script>
+<script src="<?= SITE_URL ?>/assets/toast.js"></script>
 <script>
+let _statsCatTimer = null;
 function actualizarStatsCat() {
-    fetch('<?= SITE_URL ?>/api/categorias/stats')
-    .then(r => r.json())
-    .then(d => {
-        const anim = (el, val) => {
-            if (!el) return;
-            el.style.transition = 'transform .2s, opacity .2s';
-            el.style.transform = 'scale(.8)';
-            el.style.opacity = '0';
-            setTimeout(() => {
-                el.textContent = val;
-                el.style.transform = 'scale(1)';
-                el.style.opacity = '1';
-            }, 160);
-        };
-        anim(document.getElementById('statCatTotal'),   d.total);
-        anim(document.getElementById('statCatActivas'), d.activas);
-        anim(document.getElementById('statCatOcultas'), d.ocultas);
-    }).catch(() => {});
+    clearTimeout(_statsCatTimer);
+    _statsCatTimer = setTimeout(() => {
+        fetch('<?= SITE_URL ?>/api/categorias/stats')
+        .then(r => r.json())
+        .then(d => {
+            const set = (el, val) => {
+                if (!el || el.textContent == val) return;
+                el.style.transition = 'none';
+                el.style.transform = 'scale(.82)';
+                el.style.opacity   = '0';
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    el.textContent = val;
+                    el.style.transition = 'transform .22s ease, opacity .22s ease';
+                    el.style.transform  = 'scale(1)';
+                    el.style.opacity    = '1';
+                }));
+            };
+            set(document.getElementById('statCatTotal'),   d.total);
+            set(document.getElementById('statCatActivas'), d.activas);
+            set(document.getElementById('statCatOcultas'), d.ocultas);
+        }).catch(() => {});
+    }, 250);
 }
 </script>
 </body>

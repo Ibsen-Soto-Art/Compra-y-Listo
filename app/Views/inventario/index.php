@@ -20,13 +20,13 @@ $rolUsuario = $rowSesion['rol'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compra y Listo – Inventario</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preload" href="../../assets/styleAll.min.css" as="style">
-    <link rel="preload" href="../../assets/mobile-admin.min.css" as="style">
-    <link rel="stylesheet" href="../../assets/styleAll.min.css">
-    <link rel="stylesheet" href="../../assets/mobile-admin.min.css">
-    <link rel="stylesheet" href="../../assets/admin-overrides.css">
-    <link rel="stylesheet" href="../../assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="../../assets/bootstrap-icons/bootstrap-icons.css"></noscript>
+    <link rel="preload" href="<?= SITE_URL ?>/assets/styleAll.min.css" as="style">
+    <link rel="preload" href="<?= SITE_URL ?>/assets/mobile-admin.min.css" as="style">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/styleAll.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/mobile-admin.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/admin-overrides.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css"></noscript>
 </head>
 <body>
 <div class="contenedor">
@@ -35,7 +35,7 @@ $rolUsuario = $rowSesion['rol'];
     <div class="head">
         <div class="imglogo">
             <a href="<?= SITE_URL ?>/admin" class="imglogo">
-                <img class="imagenlogo" src="../../assets/imagenes/logo.png" alt="Logo">
+                <img class="imagenlogo" src="<?= SITE_URL ?>/assets/imagenes/logo.png" alt="Logo">
             </a>
             <div class="saludo" id="userMenu">
                 <div class="user-info">

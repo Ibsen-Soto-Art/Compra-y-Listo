@@ -55,13 +55,19 @@
         $dataCat[]   = (int)$r['total'];
     }
 
-    // ── Ítems por estado (Disponible / Vendido) ───────────────
-    $resEstChart = mysqli_query($con,
-        "SELECT estadoItem, COUNT(*) AS total FROM iteminventario GROUP BY estadoItem");
-    $labelsEst = []; $dataEst = [];
-    while($r = mysqli_fetch_assoc($resEstChart)){
-        $labelsEst[] = $r['estadoItem'];
-        $dataEst[]   = (int)$r['total'];
+    // ── Top 5 productos con más stock disponible ─────────────
+    $resTopStock = mysqli_query($con,
+        "SELECT p.nombreProducto, COUNT(i.idItemInventario) AS total
+         FROM iteminventario i
+         INNER JOIN producto p ON p.idProducto = i.idProducto
+         WHERE i.estadoItem = 'Disponible'
+         GROUP BY p.idProducto
+         ORDER BY total DESC
+         LIMIT 5");
+    $labelsTop = []; $dataTop = [];
+    while($r = mysqli_fetch_assoc($resTopStock)){
+        $labelsTop[] = $r['nombreProducto'];
+        $dataTop[]   = (int)$r['total'];
     }
 
     // ── Usuarios por rol ──────────────────────────────────────
@@ -154,13 +160,13 @@
     <title>Compra y Listo – Dashboard</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link rel="preload" href="../assets/styleAll.min.css" as="style">
-    <link rel="preload" href="../assets/mobile-admin.min.css" as="style">
-    <link rel="stylesheet" href="../assets/styleAll.min.css">
-    <link rel="stylesheet" href="../assets/mobile-admin.min.css">
-    <link rel="stylesheet" href="../assets/admin-overrides.css">
-    <link rel="stylesheet" href="../assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="../assets/bootstrap-icons/bootstrap-icons.css"></noscript>
+    <link rel="preload" href="<?= SITE_URL ?>/assets/styleAll.min.css" as="style">
+    <link rel="preload" href="<?= SITE_URL ?>/assets/mobile-admin.min.css" as="style">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/styleAll.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/mobile-admin.min.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/admin-overrides.css">
+    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="<?= SITE_URL ?>/assets/bootstrap-icons/bootstrap-icons.css"></noscript>
 </head>
 <body>
 <div class="contenedor">
@@ -168,7 +174,7 @@
     <!-- ── HEADER ─────────────────────────────────────────── -->
     <div class="head">
         <div class="imglogo">
-            <img class="imagenlogo" src="../assets/imagenes/logo.png" alt="Logo">
+            <img class="imagenlogo" src="<?= SITE_URL ?>/assets/imagenes/logo.png" alt="Logo">
             <div class="saludo" id="userMenu">
                 <div class="user-info">
                     <div class="user-text">
@@ -314,8 +320,8 @@
             </div>
 
             <div class="chart-card">
-                <h3><i class="bi bi-pie-chart-fill"></i> Inventario por Estado</h3>
-                <canvas id="chartEstados"></canvas>
+                <h3><i class="bi bi-box-seam-fill"></i> Top 5 Productos con más Stock</h3>
+                <canvas id="chartTopStock"></canvas>
             </div>
 
             <div class="chart-card">
@@ -521,35 +527,40 @@ new Chart(document.getElementById('chartCategorias'), {
     }
 });
 
-new Chart(document.getElementById('chartEstados'), {
-    type: 'doughnut',
+new Chart(document.getElementById('chartTopStock'), {
+    type: 'bar',
     data: {
-        labels: <?php echo json_encode($labelsEst); ?>,
+        labels: <?php echo json_encode($labelsTop); ?>,
         datasets: [{
-            data: <?php echo json_encode($dataEst); ?>,
+            label: 'Unidades disponibles',
+            data: <?php echo json_encode($dataTop); ?>,
             backgroundColor: colorsPalette,
-            borderWidth: 2,
+            borderRadius: 6,
         }]
     },
     options: {
+        indexAxis: 'y',
         responsive: true,
-        plugins: { legend: { position: 'bottom' } }
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
     }
 });
 
 new Chart(document.getElementById('chartRoles'), {
-    type: 'doughnut',
+    type: 'bar',
     data: {
         labels: <?php echo json_encode($labelsRol); ?>,
         datasets: [{
+            label: 'Usuarios',
             data: <?php echo json_encode($dataRol); ?>,
             backgroundColor: ['#2E8B57', '#3b82f6', '#f97316'],
-            borderWidth: 2,
+            borderRadius: 6,
         }]
     },
     options: {
         responsive: true,
-        plugins: { legend: { position: 'bottom' } }
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
     }
 });
 
