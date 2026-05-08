@@ -18,6 +18,8 @@ $rolUsuario = $rowSesion['rol'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="64x64" href="<?= SITE_URL ?>/assets/imagenes/partelogo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= SITE_URL ?>/assets/imagenes/partelogo.png">
     <title>Compra y Listo – Inventario</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preload" href="<?= SITE_URL ?>/assets/styleAll.min.css" as="style">

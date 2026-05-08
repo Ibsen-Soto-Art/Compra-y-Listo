@@ -22,6 +22,8 @@ if (session_status() === PHP_SESSION_NONE) session_start();
     <meta name="Author" content="Ibsen Alexis Soto Artunduaga">
     <meta name="keywords" content="compras, ventas, nuevo, usado">
     <meta name="Description" content="Página web diseñada para facilitar la compra y venta de productos nuevos y usados de manera rápida y sencilla.">
+    <link rel="icon" type="image/png" sizes="64x64" href="<?= SITE_URL ?>/assets/imagenes/partelogo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= SITE_URL ?>/assets/imagenes/partelogo.png">
     <title>Compra y Listo</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preload" href="<?= SITE_URL ?>/assets/styleAll.min.css" as="style">

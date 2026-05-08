@@ -225,6 +225,8 @@ mysqli_close($con);
     <meta name="Author" content="Ibsen Alexis Soto Artunduaga">
     <meta name="keywords" content="compras, ventas, nuevo, usado, Colombia">
     <meta name="Description" content="Compra y Listo — encuentra productos nuevos y usados al mejor precio.">
+    <link rel="icon" type="image/png" sizes="64x64" href="<?= SITE_URL ?>/assets/imagenes/partelogo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= SITE_URL ?>/assets/imagenes/partelogo.png">
     <title>Compra y Listo</title>
     <!-- Preconnect CDN fonts -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
