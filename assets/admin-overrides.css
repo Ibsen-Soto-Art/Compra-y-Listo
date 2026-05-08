@@ -38,11 +38,20 @@
     }
 }
 
-/* ── CartaProducto: sin max-height fijo para evitar corte ─── */
+/* ══ CONTENEDOR GESTOR ════════════════════════════════════════ */
+.ProductGeneral {
+    padding: 0 24px 40px !important;
+}
+
+/* ══ GRID DE PRODUCTOS — GESTOR ADMIN ════════════════════════ */
 .CartaProducto {
     max-height: none !important;
     overflow: visible !important;
     transition: opacity 0.2s ease !important;
+    margin: 0 !important;
+    gap: 16px !important;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    padding-bottom: 8px !important;
 }
 .CartaProducto:not(.activo) {
     display: none !important;
@@ -50,6 +59,87 @@
 .CartaProducto.activo {
     display: grid !important;
     opacity: 1 !important;
+}
+
+/* ── nameCatArriba ── */
+.nameCatArriba {
+    padding: 20px 0 8px !important;
+    margin: 0 !important;
+    border-bottom: 2px solid #f1f5f9 !important;
+    margin-bottom: 4px !important;
+}
+.nameCatArriba h2 {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* ── Card admin rediseñada ── */
+.card-producto {
+    border-radius: 13px !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07) !important;
+    border: 1px solid #f1f5f9 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    transition: transform .2s ease, box-shadow .2s ease !important;
+}
+.card-producto:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 10px 28px rgba(0,0,0,.12) !important;
+}
+.slider-producto {
+    height: 190px !important;
+    flex-shrink: 0 !important;
+}
+.card-info {
+    padding: 12px 14px 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    flex: 1 !important;
+}
+.card-nombre {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    line-height: 1.35 !important;
+    min-height: 35px !important;
+}
+.card-precio {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: #2E8B57 !important;
+    margin: 2px 0 0 !important;
+}
+.card-meta {
+    margin-top: auto !important;
+    padding-top: 7px !important;
+    border-top: 1px solid #f1f5f9 !important;
+}
+.card-ubicacion {
+    font-size: 11px !important;
+    color: #64748b !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+@media (max-width: 1100px) {
+    .CartaProducto { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)) !important; gap: 13px !important; }
+}
+@media (max-width: 768px) {
+    .CartaProducto { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+    .slider-producto { height: 155px !important; }
 }
 
 /* ── Breadcrumb profesional ───────────────────────────────── */

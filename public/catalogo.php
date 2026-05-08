@@ -63,11 +63,30 @@ if(!$esBot){
     <link rel="stylesheet" href="../assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="../assets/bootstrap-icons/bootstrap-icons.css"></noscript>
     <style>
-    /* ── CartaProducto: reemplaza max-height por display para evitar corte ── */
+    /* ══ GRID DE PRODUCTOS — CATÁLOGO PÚBLICO ════════════════ */
+    .ProductGeneral {
+        padding: 0 24px 40px;
+    }
+    .nameCatArriba {
+        padding: 22px 0 10px !important;
+        margin: 0 !important;
+    }
+    .nameCatArriba h2 {
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
     .CartaProducto {
         max-height: none !important;
         overflow: visible !important;
         transition: opacity 0.2s ease !important;
+        margin: 0 !important;
+        gap: 18px !important;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important;
+        padding-bottom: 8px !important;
     }
     .CartaProducto:not(.activo) {
         display: none !important;
@@ -75,6 +94,115 @@ if(!$esBot){
     .CartaProducto.activo {
         display: grid !important;
         opacity: 1 !important;
+    }
+
+    /* ── Card pública rediseñada ── */
+    .card-pub {
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        background: #fff !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07) !important;
+        border: 1px solid #f1f5f9 !important;
+        transition: transform .22s ease, box-shadow .22s ease !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .card-pub:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 12px 32px rgba(0,0,0,.13) !important;
+    }
+    .card-pub .slider-producto {
+        height: 210px !important;
+        flex-shrink: 0 !important;
+    }
+    .card-pub .card-info {
+        padding: 14px 16px 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        flex: 1 !important;
+    }
+    .card-pub .card-nombre {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        line-height: 1.35 !important;
+        white-space: normal !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        min-height: 38px !important;
+    }
+    .card-pub .card-precio {
+        font-size: 20px !important;
+        font-weight: 800 !important;
+        color: #2E8B57 !important;
+        margin: 2px 0 0 !important;
+    }
+    .card-pub .card-meta {
+        margin-top: auto !important;
+        padding-top: 8px !important;
+        border-top: 1px solid #f1f5f9 !important;
+    }
+    .card-pub .card-ubicacion {
+        font-size: 12px !important;
+        color: #64748b !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .card-pub .card-wa-btn {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        margin-top: 10px !important;
+        background: #25d366 !important;
+        color: #fff !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        padding: 9px 12px !important;
+        border-radius: 9px !important;
+        text-decoration: none !important;
+        transition: background .15s ease !important;
+    }
+    .card-pub .card-wa-btn:hover {
+        background: #1ebe5c !important;
+    }
+    .card-oferta-badge-pub {
+        position: absolute !important;
+        top: 10px !important;
+        right: 10px !important;
+        background: linear-gradient(135deg,#f97316,#dc2626) !important;
+        color: #fff !important;
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        padding: 4px 9px !important;
+        border-radius: 20px !important;
+        letter-spacing: .4px !important;
+        text-transform: uppercase !important;
+        z-index: 5 !important;
+    }
+
+    @media (max-width: 900px) {
+        .CartaProducto { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)) !important; gap: 14px !important; }
+        .ProductGeneral { padding: 0 14px 32px; }
+    }
+    @media (max-width: 600px) {
+        .CartaProducto { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+        .ProductGeneral { padding: 0 10px 28px; }
+        .card-pub .slider-producto { height: 155px !important; }
+        .card-pub .card-nombre { font-size: 13px !important; min-height: 34px !important; }
+        .card-pub .card-precio { font-size: 17px !important; }
+        .card-pub .card-wa-btn { font-size: 12px !important; padding: 8px !important; }
+    }
+    @media (max-width: 380px) {
+        .CartaProducto { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+        .ProductGeneral { padding: 0 8px 20px; }
     }
 
     /* ══ BARRA DE FILTROS AVANZADOS ══════════════════════════ */
