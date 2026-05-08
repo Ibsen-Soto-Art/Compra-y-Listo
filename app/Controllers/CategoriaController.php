@@ -149,6 +149,18 @@ class CategoriaController extends Controller {
         $this->json(['status' => 'success', 'nuevoEstado' => $nuevoEstado]);
     }
 
+    // GET /api/categorias/estados  — para actualizar visibilidad en gestor sin recargar
+    public function estados(): void {
+        $this->requireAuth();
+        $con  = $this->db();
+        $res  = mysqli_query($con, "SELECT idCategoria, estadoCategoria FROM categoria");
+        $data = [];
+        while ($r = mysqli_fetch_assoc($res)) {
+            $data[(int)$r['idCategoria']] = $r['estadoCategoria'];
+        }
+        $this->json($data);
+    }
+
     // GET /api/categorias/plantilla
     public function plantilla(): void {
         $this->requireAuth();

@@ -1439,6 +1439,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                     COALESCE(c.nombreCategoria, pc.nombreCategoria, 'Sin categoría') AS nombreCat,
                     COALESCE(inv_agg.stockDisponible, 0) AS stockDisponible,
                     COALESCE(inv_agg.stockTotal, 0)      AS stockTotal,
+                    COALESCE(pc.estadoCategoria, c.estadoCategoria, 'Activo') AS estadoCat,
                     i.idImagen,
                     i.rutaImagen,
                     i.esPrincipal
@@ -1484,6 +1485,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                             "nombreSubcat"   => $row['nombreSubcat'],
                             "stockDisponible"=> $row['stockDisponible'],
                             "stockTotal"     => $row['stockTotal'],
+                            "estadoCat"      => $row['estadoCat'],
                             "idMunicipio"    => $row['idMunicipio'] ? (int)$row['idMunicipio'] : null,
                             "idDepartamento" => $row['idDepartamento'] ? (int)$row['idDepartamento'] : null,
                             "subcats"        => [],
@@ -1580,7 +1582,15 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                                 "imagenes"        => array_values($prod['imagenes'])
                             ], JSON_UNESCAPED_UNICODE), ENT_QUOTES);
                         ?>
-                        <div class="card-producto"
+                        <?php
+                            $catOculta = $prod['estadoCat'] === 'Oculto';
+                            $sinStock  = (int)$prod['stockDisponible'] === 0;
+                            $ocultoPub = $catOculta || $sinStock;
+                            $razones   = [];
+                            if ($catOculta) $razones[] = ['icono' => 'bi-tag-fill', 'txt' => 'Categoría oculta', 'tipo' => 'cat'];
+                            if ($sinStock)  $razones[] = ['icono' => 'bi-box',      'txt' => 'Sin unidades',     'tipo' => 'stock'];
+                        ?>
+                        <div class="card-producto<?php echo $ocultoPub ? ' card-oculta-pub' : ''; ?>"
                             data-categoria="<?php echo $idCat ?>"
                             data-nombre="<?php echo strtolower($prod['nombre']); ?>"
                             data-id="<?php echo $id ?>"
@@ -1667,6 +1677,18 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                                         <?php echo htmlspecialchars($prod['ubicacion']); ?>
                                     </span>
                                 </div>
+                                <?php if ($ocultoPub): ?>
+                                <div class="card-visibilidad-strip">
+                                    <i class="bi bi-eye-slash-fill"></i>
+                                    <span>Oculto al público</span>
+                                    <?php foreach ($razones as $r): ?>
+                                    <span class="card-razon-pill razon-<?php echo $r['tipo']; ?>">
+                                        <i class="bi <?php echo $r['icono']; ?>"></i>
+                                        <?php echo $r['txt']; ?>
+                                    </span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
                                 <!-- Fila inventario -->
                                 <div class="card-inv-row">
                                     <?php if($total > 0): ?>
@@ -3107,6 +3129,65 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
     </div>
 <script src="<?= SITE_URL ?>/assets/toast.js"></script>
+<script>
+/* ── Visibilidad en tiempo real ────────────────────────────────
+   Al volver a este tab (visibilitychange) o cada 30 s, consulta
+   los estados de categorías y el stock para actualizar las
+   tarjetas sin recargar la página.
+──────────────────────────────────────────────────────────── */
+(function() {
+    const SITE = <?= json_encode(SITE_URL) ?>;
+
+    function aplicarVisibilidad(estadosCat, stockMap) {
+        document.querySelectorAll('.card-producto').forEach(card => {
+            const idCat     = parseInt(card.dataset.categoria) || 0;
+            const idProd    = parseInt(card.dataset.id) || 0;
+            const catOculta = (estadosCat[idCat] ?? 'Activo') === 'Oculto';
+            const disponible = stockMap !== null
+                ? (stockMap[idProd] ?? 0)
+                : (() => { const p = JSON.parse(card.dataset.prod || '{}'); return parseInt(p.stockDisponible) || 0; })();
+            const sinStock  = disponible === 0;
+            const oculto    = catOculta || sinStock;
+
+            card.classList.toggle('card-oculta-pub', oculto);
+
+            // Actualizar o crear la franja
+            let strip = card.querySelector('.card-visibilidad-strip');
+            if (!oculto) { strip && strip.remove(); return; }
+
+            if (!strip) {
+                strip = document.createElement('div');
+                strip.className = 'card-visibilidad-strip';
+                const invRow = card.querySelector('.card-inv-row');
+                if (invRow) invRow.before(strip);
+            }
+
+            const razones = [];
+            if (catOculta) razones.push('<span class="card-razon-pill razon-cat"><i class="bi bi-tag-fill"></i> Categoría oculta</span>');
+            if (sinStock)  razones.push('<span class="card-razon-pill razon-stock"><i class="bi bi-box"></i> Sin unidades</span>');
+
+            strip.innerHTML = `<i class="bi bi-eye-slash-fill"></i><span>Oculto al público</span>${razones.join('')}`;
+        });
+    }
+
+    function refrescarEstados() {
+        Promise.all([
+            fetch(`${SITE}/api/categorias/estados`).then(r => r.json()),
+            fetch(`${SITE}/api/productos/stock`).then(r => r.json())
+        ])
+        .then(([cats, stock]) => aplicarVisibilidad(cats, stock))
+        .catch(() => {});
+    }
+
+    // Al volver a este tab
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') refrescarEstados();
+    });
+
+    // Polling cada 30 s (por si cambia en la misma sesión)
+    setInterval(refrescarEstados, 30_000);
+})();
+</script>
 </body>
 </html>
 

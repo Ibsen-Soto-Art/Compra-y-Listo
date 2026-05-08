@@ -296,4 +296,17 @@ class ProductoController extends Controller {
         $this->requireAuthJson();
         require ROOT_PATH . '/modules/Productos/importarProductos.php';
     }
+
+    // ── GET /api/productos/stock  — stock disponible por producto ─
+    public function stock(): void {
+        $this->requireAuth();
+        $res  = mysqli_query($this->db(),
+            "SELECT idProducto, SUM(estadoItem='Disponible') AS disponible
+             FROM iteminventario GROUP BY idProducto");
+        $data = [];
+        while ($r = mysqli_fetch_assoc($res)) {
+            $data[(int)$r['idProducto']] = (int)$r['disponible'];
+        }
+        $this->json($data);
+    }
 }

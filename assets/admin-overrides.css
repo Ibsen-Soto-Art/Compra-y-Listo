@@ -192,3 +192,49 @@
     border: 1px solid #bbf7d0 !important;
     white-space: nowrap !important;
 }
+
+/* ── Tarjeta oculta al público ────────────────────────────── */
+.card-producto.card-oculta-pub {
+    opacity: .72;
+    filter: grayscale(35%);
+    border: 1.5px dashed #cbd5e1 !important;
+}
+.card-producto.card-oculta-pub .slider-producto {
+    filter: brightness(.88);
+}
+.card-visibilidad-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    background: #f1f5f9;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 8px 8px;
+    padding: 5px 10px;
+    font-size: .72rem;
+    color: #64748b;
+    margin: 6px -10px -8px;
+}
+.card-visibilidad-strip > i {
+    color: #94a3b8;
+    font-size: .8rem;
+}
+.card-razon-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: .68rem;
+    font-weight: 600;
+}
+.card-razon-pill.razon-cat {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+}
+.card-razon-pill.razon-stock {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}

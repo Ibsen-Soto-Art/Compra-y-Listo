@@ -49,6 +49,7 @@ $router->get('/admin/dashboard', [AdminController::class, 'dashboard']);
 $router->get('/admin/productos', [ProductoController::class, 'index']);
 
 // API productos
+$router->get ('/api/productos/stock',            [ProductoController::class, 'stock']);
 $router->get ('/api/productos/obtener',          [ProductoController::class, 'obtener']);
 $router->get ('/api/productos/obtener-completo', [ProductoController::class, 'obtenerCompleto']);
 $router->post('/api/productos/crear',            [ProductoController::class, 'crear']);
@@ -64,6 +65,7 @@ $router->post('/api/productos/importar',         [ProductoController::class, 'im
 // Gestor de categorías (vista + API)
 $router->get('/admin/categorias',                  [CategoriaController::class, 'index']);
 $router->get ('/api/categorias/stats',             [CategoriaController::class, 'stats']);
+$router->get ('/api/categorias/estados',           [CategoriaController::class, 'estados']);
 $router->post('/api/categorias/insertar',          [CategoriaController::class, 'insertar']);
 $router->post('/api/categorias/editar',            [CategoriaController::class, 'editar']);
 $router->get ('/api/categorias/eliminar',          [CategoriaController::class, 'eliminar']);
