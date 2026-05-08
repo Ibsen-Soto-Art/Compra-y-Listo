@@ -63,6 +63,20 @@ if(!$esBot){
     <link rel="stylesheet" href="../assets/bootstrap-icons/bootstrap-icons.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="../assets/bootstrap-icons/bootstrap-icons.css"></noscript>
     <style>
+    /* ── CartaProducto: reemplaza max-height por display para evitar corte ── */
+    .CartaProducto {
+        max-height: none !important;
+        overflow: visible !important;
+        transition: opacity 0.2s ease !important;
+    }
+    .CartaProducto:not(.activo) {
+        display: none !important;
+    }
+    .CartaProducto.activo {
+        display: grid !important;
+        opacity: 1 !important;
+    }
+
     /* ══ BARRA DE FILTROS AVANZADOS ══════════════════════════ */
     .filtros-avanzados-bar {
         display: flex;
