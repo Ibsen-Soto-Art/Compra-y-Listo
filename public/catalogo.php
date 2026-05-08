@@ -112,7 +112,7 @@ if(!$esBot){
         box-shadow: 0 12px 32px rgba(0,0,0,.13) !important;
     }
     .card-pub .slider-producto {
-        height: 210px !important;
+        height: 165px !important;
         flex-shrink: 0 !important;
     }
     .card-pub .card-info {
@@ -195,7 +195,7 @@ if(!$esBot){
     @media (max-width: 600px) {
         .CartaProducto { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
         .ProductGeneral { padding: 0 10px 28px; }
-        .card-pub .slider-producto { height: 155px !important; }
+        .card-pub .slider-producto { height: 140px !important; }
         .card-pub .card-nombre { font-size: 13px !important; min-height: 34px !important; }
         .card-pub .card-precio { font-size: 17px !important; }
         .card-pub .card-wa-btn { font-size: 12px !important; padding: 8px !important; }

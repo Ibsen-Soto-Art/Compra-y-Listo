@@ -1206,10 +1206,14 @@ ob_start();
             <?php
                 $sqlCat = "SELECT c.idCategoria, c.nombreCategoria, COUNT(DISTINCT p.idProducto) AS totalProductos
                            FROM categoria c
-                           INNER JOIN subcategoria s ON s.idCategoria = c.idCategoria
-                           INNER JOIN productosubcategoria ps ON ps.idSubcategoria = s.idSubcategoria
-                           INNER JOIN producto p ON p.idProducto = ps.idProducto
-                           WHERE c.estadoCategoria = 'Activo'
+                           INNER JOIN producto p ON (
+                               p.idCategoria = c.idCategoria
+                               OR EXISTS (
+                                   SELECT 1 FROM productosubcategoria ps
+                                   INNER JOIN subcategoria s ON s.idSubcategoria = ps.idSubcategoria
+                                   WHERE ps.idProducto = p.idProducto AND s.idCategoria = c.idCategoria
+                               )
+                           )
                            GROUP BY c.idCategoria
                            HAVING totalProductos > 0
                            ORDER BY c.nombreCategoria";
@@ -1252,7 +1256,7 @@ ob_start();
                             </p>
                             <?php
                                 $idCat = intval($cat['idCategoria']);
-                                $qProd = mysqli_query($con, "SELECT DISTINCT p.nombreProducto FROM producto p INNER JOIN productosubcategoria ps ON ps.idProducto=p.idProducto INNER JOIN subcategoria s ON s.idSubcategoria=ps.idSubcategoria WHERE s.idCategoria=$idCat ORDER BY p.nombreProducto");
+                                $qProd = mysqli_query($con, "SELECT DISTINCT p.nombreProducto FROM producto p WHERE (p.idCategoria=$idCat OR EXISTS (SELECT 1 FROM productosubcategoria ps INNER JOIN subcategoria s ON s.idSubcategoria=ps.idSubcategoria WHERE ps.idProducto=p.idProducto AND s.idCategoria=$idCat)) ORDER BY p.nombreProducto");
                                 while($prod = mysqli_fetch_assoc($qProd)):
                             ?>
                             <div class="nameProduct filtro-dropdown-item"
