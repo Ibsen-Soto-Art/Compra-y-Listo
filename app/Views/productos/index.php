@@ -1298,8 +1298,8 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
                 // Mostrar todas las secciones y limpiar overrides de cartas
                 window.resetFiltro = function () {
-                    getSecciones().forEach(el => el.style.display = "");
-                    document.querySelectorAll(".card-producto").forEach(c => c.style.display = "");
+                    getSecciones().forEach(el => el.classList.remove("filtro-oculto"));
+                    document.querySelectorAll(".card-producto").forEach(c => c.classList.remove("filtro-oculto"));
                     setChipActivo(chipTodos);
                     cerrarDropdowns();
                 };
@@ -1321,7 +1321,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
                         // Mostrar solo la sección de esta categoría
                         getSecciones().forEach(el => {
-                            el.style.display = el.dataset.catId === idCat ? "" : "none";
+                            el.classList.toggle("filtro-oculto", el.dataset.catId !== idCat);
                         });
 
                         setChipActivo(this);
@@ -1357,12 +1357,12 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                         const idCat = wrap ? wrap.dataset.id : null;
 
                         getSecciones().forEach(el => {
-                            el.style.display = (!idCat || el.dataset.catId === idCat) ? "" : "none";
+                            el.classList.toggle("filtro-oculto", !(!idCat || el.dataset.catId === idCat));
                         });
 
                         // Dentro de esa sección, resaltar solo el producto buscado
                         document.querySelectorAll(".card-producto").forEach(card => {
-                            card.style.display = card.dataset.nombre.includes(nombre) ? "" : "none";
+                            card.classList.toggle("filtro-oculto", !card.dataset.nombre.includes(nombre));
                         });
 
                         if (wrap) setChipActivo(wrap.querySelector(".categoriaFiltro"));

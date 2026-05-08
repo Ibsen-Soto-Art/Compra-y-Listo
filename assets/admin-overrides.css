@@ -1,4 +1,4 @@
-/* ── Visitas: layout stats + gráfica lado a lado ─────────── */
+﻿/* ── Visitas: layout stats + gráfica lado a lado ─────────── */
 .vis-body {
     display: grid;
     grid-template-columns: 240px 1fr;
@@ -238,3 +238,7 @@
     color: #b91c1c;
     border: 1px solid #fecaca;
 }
+
+.filtro-oculto,
+.CartaProducto.activo.filtro-oculto,
+.card-producto.filtro-oculto { display: none !important; }

@@ -271,7 +271,13 @@ mysqli_close($con);
     }
     .CartaProducto.activo {
         display: grid !important;
-        opacity: 1 !important;
+    }
+    .filtro-oculto,
+    .CartaProducto.activo.filtro-oculto,
+    .card-pub.filtro-oculto,
+    .card-pub.card-filtro-oculta,
+    .card-filtro-oculta {
+        display: none !important;
     }
 
     /* ── Card pública rediseñada ── */
@@ -2016,8 +2022,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
     // Mostrar todo
     function resetFiltro(){
-        getSecciones().forEach(el => el.style.display = "");
-        document.querySelectorAll(".card-pub").forEach(c => c.style.display = "");
+        getSecciones().forEach(el => el.classList.remove("filtro-oculto"));
+        document.querySelectorAll(".card-pub").forEach(c => { c.classList.remove("filtro-oculto"); c.classList.remove("card-filtro-oculta"); });
         setActivo(chipTodos);
         cerrarDropdowns();
     }
@@ -2032,7 +2038,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
             const idCat = this.dataset.categoria;
             getSecciones().forEach(el => {
-                el.style.display = el.dataset.catId === idCat ? "" : "none";
+                el.classList.toggle("filtro-oculto", el.dataset.catId !== idCat);
             });
             setActivo(this);
             cerrarDropdowns();
@@ -2065,10 +2071,10 @@ document.addEventListener("DOMContentLoaded", function(){
             const idCat  = wrap ? wrap.dataset.id : null;
 
             getSecciones().forEach(el => {
-                el.style.display = (!idCat || el.dataset.catId === idCat) ? "" : "none";
+                el.classList.toggle("filtro-oculto", !(!idCat || el.dataset.catId === idCat));
             });
             document.querySelectorAll(".card-pub").forEach(card => {
-                card.style.display = card.dataset.nombre.includes(nombre) ? "" : "none";
+                card.classList.toggle("filtro-oculto", !card.dataset.nombre.includes(nombre));
             });
             if(wrap) setActivo(wrap.querySelector(".categoriaFiltro"));
             cerrarDropdowns();
@@ -2776,27 +2782,27 @@ function actualizarDots(idx){
 
         // Filtrar
         todasCards.forEach(card => {
-            const precio   = parseFloat(card.dataset.precio)    || 0;
-            const oferta   = card.dataset.oferta === "1";
+            const precio    = parseFloat(card.dataset.precio)    || 0;
+            const oferta    = card.dataset.oferta === "1";
             const ubicacion = card.dataset.ubicacion || "";
-            const catId    = card.dataset.categoria  || "";
+            const catId     = card.dataset.categoria  || "";
 
             let visible = true;
-            if(precio < min || precio > max)                                    visible = false;
-            if(filtros.soloOferta && !oferta)                                   visible = false;
+            if(precio < min || precio > max)                                           visible = false;
+            if(filtros.soloOferta && !oferta)                                          visible = false;
             if(filtros.ubicaciones.length && !filtros.ubicaciones.includes(ubicacion)) visible = false;
             if(filtros.categorias.length  && !filtros.categorias.includes(catId))      visible = false;
             if(filtros.subcategorias.length){
                 const cardSubs = (card.dataset.subcategorias || "").split(",").map(s => s.trim()).filter(Boolean);
-                if(!filtros.subcategorias.some(sid => cardSubs.includes(sid))) visible = false;
+                if(!filtros.subcategorias.some(sid => cardSubs.includes(sid)))         visible = false;
             }
 
-            card.style.display = visible ? "" : "none";
+            card.classList.toggle("card-filtro-oculta", !visible);
         });
 
         // Ordenar las cards visibles dentro de cada grid
         document.querySelectorAll(".CartaProducto").forEach(grid => {
-            const cards = [...grid.querySelectorAll(".card-pub")].filter(c => c.style.display !== "none");
+            const cards = [...grid.querySelectorAll(".card-pub")].filter(c => !c.classList.contains("card-filtro-oculta"));
             const sorted = [...cards].sort((a, b) => {
                 switch(orden){
                     case "precio-asc":  return parseFloat(a.dataset.precio) - parseFloat(b.dataset.precio);
@@ -2814,14 +2820,14 @@ function actualizarDots(idx){
         document.querySelectorAll(".nameCatArriba").forEach(header => {
             const catId = header.dataset.catId;
             const grid  = document.querySelector(`.CartaProducto[data-cat-id="${catId}"]`);
-            const visibles = grid ? [...grid.querySelectorAll(".card-pub")].filter(c => c.style.display !== "none").length : 0;
-            header.style.display = visibles > 0 ? "" : "none";
-            if(grid) grid.style.display = visibles > 0 ? "" : "none";
+            const visibles = grid ? [...grid.querySelectorAll(".card-pub")].filter(c => !c.classList.contains("card-filtro-oculta")).length : 0;
+            header.classList.toggle("filtro-oculto", visibles === 0);
+            if(grid) grid.classList.toggle("filtro-oculto", visibles === 0);
         });
 
         // Mensaje sin resultados
         let sinResultadosEl = document.getElementById("filtrosSinResultados");
-        const hayVisibles = todasCards.some(c => c.style.display !== "none");
+        const hayVisibles = todasCards.some(c => !c.classList.contains("card-filtro-oculta"));
         if(!hayVisibles){
             if(!sinResultadosEl){
                 sinResultadosEl = document.createElement("div");
@@ -2849,8 +2855,8 @@ function actualizarDots(idx){
         filtros = { min: "", max: "", soloOferta: false, ubicaciones: [], categorias: [], subcategorias: [] };
         restaurarPanel();
         selectOrden.value = "relevancia";
-        document.querySelectorAll(".card-pub").forEach(c => c.style.display = "");
-        document.querySelectorAll(".nameCatArriba, .CartaProducto").forEach(el => el.style.display = "");
+        document.querySelectorAll(".card-pub").forEach(c => c.classList.remove("card-filtro-oculta"));
+        document.querySelectorAll(".nameCatArriba, .CartaProducto").forEach(el => el.classList.remove("filtro-oculto"));
         const sr = document.getElementById("filtrosSinResultados");
         if(sr) sr.style.display = "none";
         renderChips();
