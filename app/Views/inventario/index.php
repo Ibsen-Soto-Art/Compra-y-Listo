@@ -217,7 +217,11 @@ $rolUsuario = $rowSesion['rol'];
 
             <div class="modal-form" style="margin-top:0;">
                 <label>Cantidad de ítems a agregar</label>
-                <input type="number" id="masivoCantidad" min="1" max="200" value="1" style="font-size:18px;font-weight:700;text-align:center;">
+                <input type="number" id="masivoCantidad" min="1" max="1000" value="1"
+                       style="font-size:18px;font-weight:700;text-align:center;">
+                <small id="masivoCantidadMsg" style="color:#dc2626;font-size:12px;display:none;">
+                    Máximo 1000 unidades por operación.
+                </small>
 
                 <label>Estado inicial</label>
                 <select id="masivoEstado">
@@ -540,13 +544,29 @@ function actualizarPreview(){
     document.getElementById("masivoPreview").textContent = texto;
 }
 
-document.getElementById("masivoCantidad").addEventListener("input", actualizarPreview);
+document.getElementById("masivoCantidad").addEventListener("input", function(){
+    const MAX = 1000;
+    let v = parseInt(this.value) || 1;
+    const msg = document.getElementById("masivoCantidadMsg");
+    if(v > MAX){
+        v = MAX;
+        this.value = MAX;
+        msg.style.display = "block";
+    } else {
+        msg.style.display = "none";
+    }
+    if(v < 1){ this.value = 1; }
+    actualizarPreview();
+});
 
 // ── Confirmar agregar masivo ──────────────────────────────
 document.getElementById("btnConfirmarMasivo").addEventListener("click", function(){
     if(!masivoInfo){ return; }
     const cantidad = parseInt(document.getElementById("masivoCantidad").value) || 0;
-    if(cantidad < 1){ document.getElementById("masivoMsg").innerHTML = '<p style="color:#dc2626">Indica una cantidad válida.</p>'; return; }
+    if(cantidad < 1 || cantidad > 1000){
+        document.getElementById("masivoMsg").innerHTML = '<p style="color:#dc2626">La cantidad debe estar entre 1 y 1000.</p>';
+        return;
+    }
 
     const btn = this;
     btn.disabled = true;

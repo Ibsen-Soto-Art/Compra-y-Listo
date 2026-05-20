@@ -445,6 +445,14 @@ if (session_status() === PHP_SESSION_NONE) session_start();
             font-weight: 700;
             color: #ea580c;
         }
+        /* ── Precio overflow prevention ─────────────────────── */
+        .card-precio, .card-precio-tachado, .card-precio-descuento,
+        #vistaPrecioFinal, #vistaPrecioOriginal {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            white-space: nowrap;
+        }
         /* ── Badge oferta en card (gestor) ──────────────────── */
         .card-oferta-badge {
             position: absolute;
@@ -922,7 +930,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
                             <input type="text" name="nombre" placeholder="Nombre del producto" required>
 
-                            <input type="number" name="precio" placeholder="Precio" required>
+                            <input type="number" name="precio" placeholder="Precio" required min="0" max="999999999" step="any">
 
                             <label>Categoría <small style="color:#dc2626">*</small></label>
                             <select id="selectCategoriaProducto" name="idCategoria" required>
@@ -1148,8 +1156,11 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                                     <small style="color:#94a3b8;font-size:12px">(opcional, solo al crear)</small>
                                 </div>
                                 <input type="number" id="cantidadUnidades" name="cantidad"
-                                    placeholder="0" min="0" value="0"
+                                    placeholder="0" min="0" max="1000" value="0"
                                     style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;box-sizing:border-box;">
+                                <small id="msgCantidadUnidades" style="color:#dc2626;font-size:11.5px;margin-top:4px;display:none;">
+                                    <i class="bi bi-exclamation-circle"></i> Máximo 1000 unidades iniciales.
+                                </small>
                                 <small style="color:#94a3b8;font-size:11.5px;margin-top:4px;display:block">
                                     <i class="bi bi-info-circle"></i> Se crearán automáticamente las unidades en inventario al guardar
                                 </small>
@@ -2214,8 +2225,21 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                         return redimensionarImagenCliente(file, maxPx, quality);
                     }
 
+                    document.getElementById("cantidadUnidades").addEventListener("input", function(){
+                        const msg = document.getElementById("msgCantidadUnidades");
+                        if(parseInt(this.value) > 1000){ this.value = 1000; msg.style.display = "block"; }
+                        else msg.style.display = "none";
+                    });
+
                     document.getElementById("formProducto").addEventListener("submit", async function(e){
                         e.preventDefault();
+                        const cantInput = document.getElementById("cantidadUnidades");
+                        if(cantInput && parseInt(cantInput.value) > 1000){
+                            cantInput.value = 1000;
+                            document.getElementById("msgCantidadUnidades").style.display = "block";
+                            cantInput.focus();
+                            return;
+                        }
                         const btn = this.querySelector("button[type='submit']");
                         if (btn.disabled) return;
                         btn.disabled = true;
@@ -2406,6 +2430,11 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                         });
                         inputDisc.addEventListener("input", actualizarPreviewOferta);
                         precioInp.addEventListener("input", actualizarPreviewOferta);
+                        precioInp.addEventListener("input", function(){
+                            const v = parseFloat(this.value);
+                            if(v > 999999999) this.value = 999999999;
+                            if(v < 0) this.value = 0;
+                        });
                     })();
 
                     function actualizarPreviewOferta(){
@@ -2730,7 +2759,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
                 <!-- Agregar unidades -->
                 <div class="modal-inv-agregar">
-                    <input type="number" id="invCantidadNueva" min="1" value="1" placeholder="Cant.">
+                    <input type="number" id="invCantidadNueva" min="1" max="1000" value="1" placeholder="Cant.">
                     <button class="btn-inv-add" id="btnInvAgregar" onclick="agregarItemsDesdeModal()">
                         <i class="bi bi-plus-lg"></i> Agregar unidades
                     </button>
@@ -3035,6 +3064,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                 if(!_invIdProducto) return;
                 const cant = parseInt(document.getElementById("invCantidadNueva").value) || 0;
                 if(cant < 1){ toast.warning("Ingresa una cantidad mayor a 0"); return; }
+                if(cant > 1000){ toast.warning("El máximo por operación es 1000 unidades"); document.getElementById("invCantidadNueva").value = 1000; return; }
                 const btn = document.getElementById("btnInvAgregar");
                 btn.disabled = true;
                 btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Agregando...';

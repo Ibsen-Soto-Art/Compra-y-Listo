@@ -111,8 +111,8 @@ class InventarioController extends Controller {
         $estado     = in_array($_POST['estadoItem'] ?? '', ['Disponible', 'Vendido'])
             ? $_POST['estadoItem'] : 'Disponible';
 
-        if (!$idProducto || $cantidad < 1) {
-            $this->json(['status' => 'error', 'message' => 'Datos invalidos'], 422);
+        if (!$idProducto || $cantidad < 1 || $cantidad > 1000) {
+            $this->json(['status' => 'error', 'message' => 'La cantidad debe estar entre 1 y 1000.'], 422);
         }
 
         $rows      = InventarioModel::getInfoProducto($con, $idProducto);

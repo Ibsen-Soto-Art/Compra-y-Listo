@@ -323,6 +323,10 @@ mysqli_close($con);
         font-weight: 800 !important;
         color: #2E8B57 !important;
         margin: 2px 0 0 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        max-width: 100% !important;
     }
     .card-pub .card-meta {
         margin-top: auto !important;

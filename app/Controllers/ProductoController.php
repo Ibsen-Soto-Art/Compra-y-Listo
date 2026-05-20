@@ -76,6 +76,9 @@ class ProductoController extends Controller {
         if (!$nombre || !$precio || !$idCategoria) {
             $this->json(['ok' => false, 'error' => 'Datos incompletos'], 422);
         }
+        if ($precio > 999999999) {
+            $this->json(['ok' => false, 'error' => 'El precio excede el máximo permitido (999,999,999)'], 422);
+        }
 
         $ubicacion  = $idMunicipio ? ProductoModel::getUbicacion($con, $idMunicipio) : '';
         $idProducto = ProductoModel::insertar($con, [
@@ -97,8 +100,8 @@ class ProductoController extends Controller {
         $carpeta = ROOT_PATH . "/uploads/productos/$idProducto/";
         if (!file_exists($carpeta)) mkdir($carpeta, 0777, true);
 
-        // Auto-crear unidades de inventario si se indicó cantidad
-        $cantidad = (int)($_POST['cantidad'] ?? 0);
+        // Auto-crear unidades de inventario si se indicó cantidad (máx 1000)
+        $cantidad = min((int)($_POST['cantidad'] ?? 0), 1000);
         if ($cantidad > 0) {
             $rCat = mysqli_fetch_assoc(mysqli_query($con,
                 "SELECT nombreCategoria FROM categoria WHERE idCategoria = $idCategoria"));
@@ -145,6 +148,9 @@ class ProductoController extends Controller {
 
         if (!$nombre || !$precio || !$idCategoria) {
             $this->json(['ok' => false, 'error' => 'Datos incompletos'], 422);
+        }
+        if ($precio > 999999999) {
+            $this->json(['ok' => false, 'error' => 'El precio excede el máximo permitido (999,999,999)'], 422);
         }
 
         if ($idMunicipioPost !== '' && (int)$idMunicipioPost > 0) {
