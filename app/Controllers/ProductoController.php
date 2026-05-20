@@ -254,7 +254,7 @@ class ProductoController extends Controller {
 
         ProductoModel::eliminarImagenesPorProducto($con, [$id]);
         $ok = ProductoModel::eliminar($con, $id);
-        $this->json($ok ? 'ok' : 'error');
+        $this->json($ok ? ['ok' => true] : ['ok' => false, 'error' => 'Error al eliminar'], $ok ? 200 : 500);
     }
 
     // ── POST /api/productos/eliminar-varios ─────────────────────

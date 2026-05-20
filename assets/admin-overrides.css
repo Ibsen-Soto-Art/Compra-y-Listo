@@ -102,6 +102,8 @@
     flex-direction: column !important;
     gap: 5px !important;
     flex: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
 }
 .card-nombre {
     font-size: 13px !important;
@@ -120,6 +122,13 @@
     font-weight: 800 !important;
     color: #2E8B57 !important;
     margin: 2px 0 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+    display: block !important;
+}
+.card-precio-tachado, .card-precio-descuento {
+    white-space: nowrap !important;
 }
 .card-meta {
     margin-top: auto !important;

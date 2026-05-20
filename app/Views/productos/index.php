@@ -2357,13 +2357,13 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
                             body: "id=" + id
                         })
-                        .then(res => res.text())
-                        .then(respuesta => {
-                            if(respuesta.trim() === "ok"){
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data.ok){
                                 toast.success("Producto eliminado correctamente");
                                 setTimeout(() => location.reload(), 1200);
                             } else {
-                                toast.error("Error al eliminar: " + respuesta.trim());
+                                toast.error(data.error || "Error al eliminar");
                             }
                         })
                         .catch(() => toast.error("Error de conexión al eliminar"));
@@ -3221,6 +3221,20 @@ if (session_status() === PHP_SESSION_NONE) session_start();
     // Polling cada 30 s (por si cambia en la misma sesión)
     setInterval(refrescarEstados, 30_000);
 })();
+
+// ── Auto-ajuste de fuente en precios de cards ─────────────────
+function ajustarFuentePrecios() {
+    document.querySelectorAll('.card-precio').forEach(el => {
+        el.style.fontSize = '';
+        let size = parseFloat(getComputedStyle(el).fontSize) || 17;
+        while (el.scrollWidth > el.clientWidth && size > 10) {
+            size -= 0.5;
+            el.style.fontSize = size + 'px';
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', ajustarFuentePrecios);
+window.addEventListener('resize', ajustarFuentePrecios);
 </script>
 </body>
 </html>
