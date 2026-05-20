@@ -470,17 +470,26 @@ button, a { -webkit-tap-highlight-color: transparent; }
 /* ══════════════════════════════════════════════════════
    9. TARJETAS DE PRODUCTO — 2 columnas
 ══════════════════════════════════════════════════════ */
-.nameCatArriba    { margin: 8px 14px 4px; }
+.nameCatArriba    { margin: 8px 10px 4px !important; width: calc(100% - 20px) !important; box-sizing: border-box !important; }
 .nameCatArriba h2 { font-size: 13px; padding: 8px 12px; background: #f1f5f9; border-radius: 10px; border: 1px solid #e2e8f0; }
 
 .CartaProducto {
     display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 0 14px 80px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    padding: 0 10px 80px !important;
     margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
-.card-producto { width: 100% !important; border-radius: 14px; overflow: hidden; }
+.card-producto {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 14px;
+    overflow: hidden;
+}
 .slider-producto {
     height: 140px;
     border-radius: 14px 14px 0 0;
