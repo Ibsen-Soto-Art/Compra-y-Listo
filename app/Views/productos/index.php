@@ -1676,7 +1676,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                             <!-- Info -->
                             <div class="card-info">
                                 <h4 class="card-nombre"><?php echo htmlspecialchars($prod['nombre']); ?></h4>
-                                <p class="card-precio">
+                                <p class="card-precio<?php echo ($prod['enOferta'] && $prod['descuento'] > 0) ? ' card-precio-con-oferta' : ''; ?>">
                                     <?php if($prod['enOferta'] && $prod['descuento'] > 0):
                                         $precioFinal = $prod['precio'] * (1 - $prod['descuento'] / 100);
                                     ?>

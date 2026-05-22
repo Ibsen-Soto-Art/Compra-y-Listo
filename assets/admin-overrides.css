@@ -146,9 +146,145 @@
 @media (max-width: 1100px) {
     .CartaProducto { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)) !important; gap: 13px !important; }
 }
+
+/* ── Móvil: 1 columna, card horizontal ──────────────────────── */
 @media (max-width: 768px) {
-    .CartaProducto { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-    .slider-producto { height: 155px !important; }
+    /* Grid → lista vertical */
+    .CartaProducto {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: none !important;
+        gap: 10px !important;
+        padding: 0 12px 90px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Card: fila horizontal */
+    .card-producto {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: stretch !important;
+        min-height: 115px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Imagen: cuadrado fijo izquierda */
+    .slider-producto {
+        width: 115px !important;
+        min-width: 115px !important;
+        height: auto !important;
+        min-height: 115px !important;
+        border-radius: 14px 0 0 14px !important;
+        flex-shrink: 0 !important;
+    }
+    .slider-producto img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        position: absolute !important;
+        inset: 0 !important;
+    }
+
+    /* Botones de acción centrados sobre la imagen */
+    .acciones-producto {
+        opacity: 1 !important;
+        transform: none !important;
+        position: absolute !important;
+        bottom: 0 !important; top: auto !important;
+        left: 0 !important; right: 0 !important;
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        gap: 5px !important;
+        padding: 6px !important;
+        background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 100%) !important;
+        border-radius: 0 !important;
+    }
+    .btn-accion {
+        width: 32px !important; height: 32px !important;
+        font-size: 13px !important;
+        border-radius: 8px !important;
+    }
+
+    /* Info: ocupa el resto del ancho */
+    .card-info {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        padding: 10px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 4px !important;
+        overflow: hidden !important;
+    }
+
+    /* Nombre: hasta 2 líneas */
+    .card-nombre {
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        white-space: normal !important;
+        -webkit-line-clamp: 2 !important;
+        min-height: unset !important;
+        line-height: 1.35 !important;
+    }
+
+    /* Precio normal */
+    .card-precio {
+        font-size: 16px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Precio con oferta: apila verticalmente */
+    .card-precio-con-oferta {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        white-space: normal !important;
+        overflow: visible !important;
+    }
+    .card-precio-tachado {
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        color: #94a3b8 !important;
+        text-decoration: line-through !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .card-precio-descuento {
+        font-size: 16px !important;
+        font-weight: 800 !important;
+        color: #ea580c !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Ubicación */
+    .card-ubicacion {
+        font-size: 11px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Stock + Ver ítems */
+    .card-meta { padding-top: 6px !important; margin-top: auto !important; }
+    .card-inv-row { flex-wrap: wrap !important; gap: 5px !important; }
+    .card-stock-pill { font-size: 10.5px !important; padding: 2px 7px !important; }
+    .btn-ver-items-card { font-size: 10.5px !important; padding: 2px 7px !important; }
+
+    /* WhatsApp btn oculto en móvil admin (no es relevante aquí) */
+    .card-wa-btn { display: none !important; }
+
+    /* Título de categoría */
+    .nameCatArriba { margin: 12px 12px 4px !important; }
+    .nameCatArriba h2 { font-size: 13px !important; padding: 9px 13px !important; }
 }
 
 /* ── Breadcrumb profesional ───────────────────────────────── */
