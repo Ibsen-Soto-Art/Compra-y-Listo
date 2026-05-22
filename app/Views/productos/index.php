@@ -1646,25 +1646,6 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                                 </span>
                                 <?php endif; ?>
 
-                                <!-- Botones de acción (aparecen al hover) -->
-                                <div class="acciones-producto">
-                                    <button class="btn-accion btn-editar editarProducto"
-                                        title="Editar"
-                                        onclick="event.stopPropagation()">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </button>
-                                    <button class="btn-accion btn-items-inv"
-                                        title="Ver inventario"
-                                        onclick="event.stopPropagation(); verItemsProducto(<?php echo $id ?>, '<?php echo htmlspecialchars(addslashes($prod['nombre'])) ?>')">
-                                        <i class="bi bi-boxes"></i>
-                                    </button>
-                                    <button class="btn-accion btn-eliminar"
-                                        title="Eliminar"
-                                        onclick="event.stopPropagation(); eliminarProducto(<?php echo $id ?>)">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
-                                </div>
-
                                 <!-- Indicador de múltiples imágenes -->
                                 <?php if(count($prod['imagenes']) > 1){ ?>
                                 <span class="card-img-count">
@@ -1719,6 +1700,25 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                                     <button class="btn-ver-items-card"
                                         onclick="event.stopPropagation(); verItemsProducto(<?php echo $id ?>, '<?php echo htmlspecialchars(addslashes($prod['nombre'])) ?>')">
                                         <i class="bi bi-list-ul"></i> Ver items
+                                    </button>
+                                </div>
+
+                                <!-- Botones de acción -->
+                                <div class="acciones-producto">
+                                    <button class="btn-accion btn-editar editarProducto"
+                                        title="Editar"
+                                        onclick="event.stopPropagation()">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                    <button class="btn-accion btn-items-inv"
+                                        title="Ver inventario"
+                                        onclick="event.stopPropagation(); verItemsProducto(<?php echo $id ?>, '<?php echo htmlspecialchars(addslashes($prod['nombre'])) ?>')">
+                                        <i class="bi bi-boxes"></i>
+                                    </button>
+                                    <button class="btn-accion btn-eliminar"
+                                        title="Eliminar"
+                                        onclick="event.stopPropagation(); eliminarProducto(<?php echo $id ?>)">
+                                        <i class="bi bi-trash-fill"></i>
                                     </button>
                                 </div>
                             </div>
